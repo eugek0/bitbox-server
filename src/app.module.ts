@@ -5,7 +5,6 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { IConfig } from "./configuration/types";
 import { UsersModule } from "./users/users.module";
 import { AuthModule } from "./auth/auth.module";
-import { JwtModule } from "@nestjs/jwt";
 
 @Module({
   imports: [
@@ -20,7 +19,6 @@ import { JwtModule } from "@nestjs/jwt";
         uri: configService.get<IConfig>("app").mongoUri,
       }),
     }),
-    JwtModule.register({ global: true }),
     UsersModule,
     AuthModule,
   ],
