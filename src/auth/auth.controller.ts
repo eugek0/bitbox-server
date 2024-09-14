@@ -5,6 +5,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
@@ -24,7 +25,6 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
     const { access, refresh } = await this.authService.register(dto);
-
     response.cookie("access", access, { httpOnly: true });
     response.cookie("refresh", refresh, { httpOnly: true });
   }
@@ -35,7 +35,22 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
     const { access, refresh } = await this.authService.login(dto);
+    response.cookie("access", access, { httpOnly: true });
+    response.cookie("refresh", refresh, { httpOnly: true });
+  }
 
+  @Get("refresh")
+  async refresh(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<void> {
+    const oldRefresh = request.cookies.refresh;
+
+    if (!oldRefresh) {
+      throw new UnauthorizedException();
+    }
+
+    const { access, refresh } = await this.authService.refresh(oldRefresh);
     response.cookie("access", access, { httpOnly: true });
     response.cookie("refresh", refresh, { httpOnly: true });
   }

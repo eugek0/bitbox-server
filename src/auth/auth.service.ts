@@ -1,12 +1,16 @@
 import { IConfig } from "@/configuration/types";
 import { User } from "@/users/schemas/user.schema";
 import { UsersService } from "@/users/users.service";
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { CreateUserDto } from "./dtos/createUser.dto";
 import { LoginUserDto } from "./dtos/loginUser.dto";
-import { ITokens, ProfileType } from "./types";
+import { ITokenPayload, ITokens, ProfileType } from "./types";
 
 @Injectable()
 export class AuthService {
@@ -34,6 +38,25 @@ export class AuthService {
     }
 
     return this.generateTokens(user);
+  }
+
+  async refresh(oldRefresh: string): Promise<ITokens> {
+    const { refreshSecret } = this.configService.get<IConfig>("app");
+    try {
+      const { sub } = this.jwtService.verify<ITokenPayload>(oldRefresh, {
+        secret: refreshSecret,
+      });
+
+      const user = await this.usersService.getById(sub);
+
+      if (!user) {
+        throw new BadRequestException("Пользователя с таким ID не существует");
+      }
+
+      return await this.generateTokens(user);
+    } catch {
+      throw new UnauthorizedException();
+    }
   }
 
   async getProfile(id: string): Promise<ProfileType> {
