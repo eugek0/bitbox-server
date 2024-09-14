@@ -1,6 +1,7 @@
 export interface IConfig {
   port: number;
   mongoUri: string;
+  origin: string;
   accessSecret: string;
   accessExpires: string;
   refreshSecret: string;
