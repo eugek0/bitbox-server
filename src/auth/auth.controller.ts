@@ -25,8 +25,16 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
     const { access, refresh } = await this.authService.register(dto);
-    response.cookie("access", access, { httpOnly: true });
-    response.cookie("refresh", refresh, { httpOnly: true });
+    response.cookie("access", access, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    });
+    response.cookie("refresh", refresh, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    });
   }
 
   @Post("login")
@@ -35,8 +43,16 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
     const { access, refresh } = await this.authService.login(dto);
-    response.cookie("access", access, { httpOnly: true });
-    response.cookie("refresh", refresh, { httpOnly: true });
+    response.cookie("access", access, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    });
+    response.cookie("refresh", refresh, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    });
   }
 
   @Get("refresh")
@@ -51,8 +67,16 @@ export class AuthController {
     }
 
     const { access, refresh } = await this.authService.refresh(oldRefresh);
-    response.cookie("access", access, { httpOnly: true });
-    response.cookie("refresh", refresh, { httpOnly: true });
+    response.cookie("access", access, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    });
+    response.cookie("refresh", refresh, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    });
   }
 
   @UseGuards(JwtGuard)
