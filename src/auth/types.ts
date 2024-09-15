@@ -11,4 +11,4 @@ export interface ITokenPayload {
   exp: number;
 }
 
-export type ProfileType = Pick<User, "username" | "email">;
+export type ProfileType = Omit<User, "password">;

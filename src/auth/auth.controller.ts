@@ -55,6 +55,20 @@ export class AuthController {
     });
   }
 
+  @Get("logout")
+  async logout(@Res({ passthrough: true }) response: Response): Promise<void> {
+    response.cookie("access", "", {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    });
+    response.cookie("refresh", "", {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    });
+  }
+
   @Get("refresh")
   async refresh(
     @Req() request: Request,
