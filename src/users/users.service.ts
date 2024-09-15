@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { User } from "./schemas/user.schema";
@@ -17,13 +17,14 @@ export class UsersService {
     return await this.userModel.findById(id).lean().exec();
   }
 
-  async create(dto: CreateUserDto): Promise<User> {
+  async create(dto: CreateUserDto): Promise<User | undefined> {
     if (await this.getByEmail(dto.email)) {
-      throw new BadRequestException(
-        "Пользователь с таким Email уже существует",
-      );
+      return;
     }
-    const user = await this.userModel.create({ ...dto, createdAt: moment().toISOString() });
+    const user = await this.userModel.create({
+      ...dto,
+      createdAt: moment().toISOString(),
+    });
     return await user.save();
   }
 }
