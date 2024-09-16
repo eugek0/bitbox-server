@@ -1,12 +1,18 @@
 import { IConfig } from "@/configuration/types";
+import FormException from "@/core/classes/FormException";
+import { isHttpException } from "@/core/typeguards";
 import { User } from "@/users/schemas/user.schema";
 import { UsersService } from "@/users/users.service";
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { CreateUserDto } from "./dtos/createUser.dto";
 import { LoginUserDto } from "./dtos/loginUser.dto";
-import { ITokens, ProfileType } from "./types";
+import { ITokenPayload, ITokens, ProfileType } from "./types";
 
 @Injectable()
 export class AuthService {
@@ -17,23 +23,38 @@ export class AuthService {
   ) {}
 
   async register(dto: CreateUserDto): Promise<ITokens> {
-    const user = await this.usersService.create(dto);
-
-    return this.generateTokens(user);
+    try {
+      const user = await this.usersService.create(dto);
+      return this.generateTokens(user);
+    } catch (error) {
+      if (isHttpException(error)) {
+        throw new FormException(error.message, error.cause as string);
+      }
+    }
   }
 
   async login(dto: LoginUserDto): Promise<ITokens> {
-    const user = await this.usersService.getByEmail(dto.email);
-
-    if (!user) {
-      throw new BadRequestException("Пользователя с таким Email не существует");
-    }
-
-    if (user.password !== dto.password) {
-      throw new BadRequestException("Неправильный пароль");
-    }
-
+    const user = await this.validate(dto);
     return this.generateTokens(user);
+  }
+
+  async refresh(oldRefresh: string): Promise<ITokens> {
+    const { refreshSecret } = this.configService.get<IConfig>("app");
+    try {
+      const { sub } = this.jwtService.verify<ITokenPayload>(oldRefresh, {
+        secret: refreshSecret,
+      });
+
+      const user = await this.usersService.getById(sub);
+
+      if (!user) {
+        throw new BadRequestException("Пользователя с таким ID не существует");
+      }
+
+      return await this.generateTokens(user);
+    } catch {
+      throw new UnauthorizedException();
+    }
   }
 
   async getProfile(id: string): Promise<ProfileType> {
@@ -49,6 +70,23 @@ export class AuthService {
   }
 
   // INFO: Приватные методы
+
+  private async validate(dto: LoginUserDto): Promise<User> {
+    const user = await this.usersService.getByEmail(dto.email);
+
+    if (!user) {
+      throw new FormException(
+        "Пользователя с таким Email не существует",
+        "email",
+      );
+    }
+
+    if (user.password !== dto.password) {
+      throw new FormException("Неправильный пароль", "password");
+    }
+
+    return user;
+  }
 
   private async generateTokens(payload: User): Promise<ITokens> {
     const { _id, ..._ } = payload;

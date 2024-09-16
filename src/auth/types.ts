@@ -5,4 +5,10 @@ export interface ITokens {
   refresh: string;
 }
 
-export type ProfileType = Pick<User, "username" | "email">;
+export interface ITokenPayload {
+  sub: string;
+  iat: number;
+  exp: number;
+}
+
+export type ProfileType = Omit<User, "password">;
