@@ -1,6 +1,6 @@
 import { IConfig } from "@/configuration/types";
 import FormException from "@/core/classes/FormException";
-import { isHttpException } from "@/core/guards";
+import { isHttpException } from "@/core/typeguards";
 import { User } from "@/users/schemas/user.schema";
 import { UsersService } from "@/users/users.service";
 import {
