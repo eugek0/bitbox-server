@@ -9,7 +9,7 @@ export class User {
   _id: string;
 
   @Prop()
-  readonly username: string;
+  readonly login: string;
 
   @Prop()
   readonly email: string;

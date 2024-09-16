@@ -1,5 +1,6 @@
 import { IConfig } from "@/configuration/types";
 import FormException from "@/core/classes/FormException";
+import { isHttpException } from "@/core/guards";
 import { User } from "@/users/schemas/user.schema";
 import { UsersService } from "@/users/users.service";
 import {
@@ -22,16 +23,14 @@ export class AuthService {
   ) {}
 
   async register(dto: CreateUserDto): Promise<ITokens> {
-    const user = await this.usersService.create(dto);
-
-    if (!user) {
-      throw new FormException(
-        "Пользователь с таким Email уже существует",
-        "email",
-      );
+    try {
+      const user = await this.usersService.create(dto);
+      return this.generateTokens(user);
+    } catch (error) {
+      if (isHttpException(error)) {
+        throw new FormException(error.message, error.cause as string);
+      }
     }
-
-    return this.generateTokens(user);
   }
 
   async login(dto: LoginUserDto): Promise<ITokens> {
