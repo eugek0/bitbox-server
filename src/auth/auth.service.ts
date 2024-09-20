@@ -13,6 +13,7 @@ import { JwtService } from "@nestjs/jwt";
 import { CreateUserDto } from "./dtos/createUser.dto";
 import { LoginUserDto } from "./dtos/loginUser.dto";
 import { ITokenPayload, ITokens, ProfileType } from "./types";
+import * as bcrypt from "bcryptjs";
 
 @Injectable()
 export class AuthService {
@@ -81,7 +82,7 @@ export class AuthService {
       );
     }
 
-    if (user.password !== dto.password) {
+    if (!(await bcrypt.compare(dto.password, user.password))) {
       throw new FormException("Неправильный пароль", "password");
     }
 
