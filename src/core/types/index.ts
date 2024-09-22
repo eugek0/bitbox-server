@@ -1,1 +1,2 @@
-export type { Base64 } from "./aliases.types";
+export * from "./aliases.types";
+export * from "./notification.types";

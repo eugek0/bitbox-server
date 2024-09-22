@@ -5,6 +5,7 @@ import { User } from "./schemas/user.schema";
 import { CreateUserDto } from "@/auth/dtos/createUser.dto";
 import * as generateAvatar from "github-like-avatar-generator";
 import * as moment from "moment";
+import * as bcrypt from "bcryptjs";
 
 @Injectable()
 export class UsersService {
@@ -36,8 +37,11 @@ export class UsersService {
       );
     }
 
+    const { password, ...rest } = dto;
+
     const user = await this.userModel.create({
-      ...dto,
+      ...rest,
+      password: await bcrypt.hash(password, await bcrypt.genSalt(5)),
       createdAt: moment().toISOString(),
       avatar: generateAvatar({
         blocks: 6,

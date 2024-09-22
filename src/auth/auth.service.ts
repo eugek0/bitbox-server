@@ -1,5 +1,5 @@
 import { IConfig } from "@/configuration/types";
-import FormException from "@/core/classes/FormException";
+import { FormException } from "@/core/classes";
 import { isHttpException } from "@/core/typeguards";
 import { User } from "@/users/schemas/user.schema";
 import { UsersService } from "@/users/users.service";
@@ -10,6 +10,7 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
+import * as bcrypt from "bcryptjs";
 import { CreateUserDto } from "./dtos/createUser.dto";
 import { LoginUserDto } from "./dtos/loginUser.dto";
 import { ITokenPayload, ITokens, ProfileType } from "./types";
@@ -57,7 +58,7 @@ export class AuthService {
     }
   }
 
-  async getProfile(id: string): Promise<ProfileType> {
+  async profile(id: string): Promise<ProfileType> {
     const user = await this.usersService.getById(id);
 
     if (!user) {
@@ -81,7 +82,7 @@ export class AuthService {
       );
     }
 
-    if (user.password !== dto.password) {
+    if (!(await bcrypt.compare(dto.password, user.password))) {
       throw new FormException("Неправильный пароль", "password");
     }
 
