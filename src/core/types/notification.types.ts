@@ -11,6 +11,8 @@ export interface INotificationConfig {
 }
 
 export interface INotification {
-  status: NotificationStatusType;
-  config: INotificationConfig;
+  notification: {
+    status: NotificationStatusType;
+    config: INotificationConfig;
+  };
 }
