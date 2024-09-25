@@ -8,12 +8,13 @@ import {
   UnauthorizedException,
   UseGuards,
 } from "@nestjs/common";
+import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "./dtos/createUser.dto";
 import { LoginUserDto } from "./dtos/loginUser.dto";
-import { Request, Response } from "express";
-import { ProfileType } from "./types";
 import { JwtGuard } from "./jwt.guard";
+import { ProfileType } from "./types";
+import { INotification } from "@/core/types";
 
 @Controller("auth")
 export class AuthController {
