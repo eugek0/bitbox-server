@@ -2,24 +2,42 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Post,
   Req,
   Res,
   UnauthorizedException,
   UseGuards,
 } from "@nestjs/common";
+import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
-import { CreateUserDto } from "./dtos/createUser.dto";
-import { LoginUserDto } from "./dtos/loginUser.dto";
+import { CreateUserDto, LoginUserDto, ProfileDto } from "./dtos";
 import { JwtGuard } from "./jwt.guard";
-import { ProfileType } from "./types";
-import { INotification } from "@/core/types";
 
 @Controller("auth")
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @ApiTags("Пользователи")
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: "Пользователь зарегистрирован.",
+    headers: {
+      "Set-Cookie": {
+        description: "Токен доступа и токен обновления.",
+        required: true,
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: "Ошибка пользовательского ввода.",
+  })
+  @ApiBody({
+    description: "Данные для регистрации пользователя.",
+    type: CreateUserDto,
+  })
   @Post("register")
   async register(
     @Body() dto: CreateUserDto,
@@ -38,6 +56,25 @@ export class AuthController {
     });
   }
 
+  @ApiTags("Пользователи")
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: "Пользователь авторизован.",
+    headers: {
+      "Set-Cookie": {
+        description: "Токен доступа и токен обновления.",
+        required: true,
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: "Ошибка пользовательского ввода.",
+  })
+  @ApiBody({
+    description: "Данные, подтверждающие аутентичность пользователя.",
+    type: LoginUserDto,
+  })
   @Post("login")
   async login(
     @Body() dto: LoginUserDto,
@@ -56,6 +93,17 @@ export class AuthController {
     });
   }
 
+  @ApiTags("Пользователи")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Токены очищены.",
+    headers: {
+      "Set-Cookie": {
+        description: "Пустые JWT токены.",
+        required: true,
+      },
+    },
+  })
   @Get("logout")
   async logout(@Res({ passthrough: true }) response: Response): Promise<void> {
     response.cookie("access", "", {
@@ -70,6 +118,25 @@ export class AuthController {
     });
   }
 
+  @ApiTags("Пользователи")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Токены обновлены.",
+    headers: {
+      "Set-Cookie": {
+        description: "Токен доступа и токен обновления.",
+        required: true,
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: "Невалидный токен доступа (мертв или подменен).",
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: "В токене записаны неверные/неактуальные данные.",
+  })
   @Get("refresh")
   async refresh(
     @Req() request: Request,
@@ -94,9 +161,23 @@ export class AuthController {
     });
   }
 
+  @ApiTags("Пользователи")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Данные профиля получены.",
+    type: ProfileDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: "Невалидный токен доступа (мертв или подменен).",
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: "Переданы невалидные/неактуальные данные.",
+  })
   @UseGuards(JwtGuard)
   @Get("profile")
-  async profile(@Req() request: Request): Promise<ProfileType> {
+  async profile(@Req() request: Request): Promise<ProfileDto> {
     return await this.authService.profile(request.user as string);
   }
 }

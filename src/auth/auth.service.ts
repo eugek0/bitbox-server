@@ -11,9 +11,10 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcryptjs";
-import { CreateUserDto } from "./dtos/createUser.dto";
-import { LoginUserDto } from "./dtos/loginUser.dto";
-import { ITokenPayload, ITokens, ProfileType } from "./types";
+import { CreateUserDto } from "./dtos";
+import { LoginUserDto } from "./dtos";
+import { ProfileDto } from "./dtos";
+import { ITokenPayload, ITokens } from "./types";
 
 @Injectable()
 export class AuthService {
@@ -58,7 +59,7 @@ export class AuthService {
     }
   }
 
-  async profile(id: string): Promise<ProfileType> {
+  async profile(id: string): Promise<ProfileDto> {
     const user = await this.usersService.getById(id);
 
     if (!user) {

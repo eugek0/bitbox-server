@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { User } from "./schemas/user.schema";
-import { CreateUserDto } from "@/auth/dtos/createUser.dto";
+import { CreateUserDto } from "@/auth/dtos";
 import * as generateAvatar from "github-like-avatar-generator";
 import * as moment from "moment";
 import * as bcrypt from "bcryptjs";
@@ -41,7 +41,7 @@ export class UsersService {
 
     const user = await this.userModel.create({
       ...rest,
-      password: await bcrypt.hash(password, await bcrypt.genSalt(5)),
+      password: await bcrypt.hash(password, await bcrypt.genSalt()),
       createdAt: moment().toISOString(),
       avatar: generateAvatar({
         blocks: 6,
