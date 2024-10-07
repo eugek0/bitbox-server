@@ -47,12 +47,10 @@ export class AuthController {
     response.cookie("access", access, {
       httpOnly: true,
       sameSite: "none",
-      secure: true,
     });
     response.cookie("refresh", refresh, {
       httpOnly: true,
       sameSite: "none",
-      secure: true,
     });
   }
 
@@ -84,12 +82,10 @@ export class AuthController {
     response.cookie("access", access, {
       httpOnly: true,
       sameSite: "none",
-      secure: true,
     });
     response.cookie("refresh", refresh, {
       httpOnly: true,
       sameSite: "none",
-      secure: true,
     });
   }
 
@@ -109,12 +105,10 @@ export class AuthController {
     response.cookie("access", "", {
       httpOnly: true,
       sameSite: "none",
-      secure: true,
     });
     response.cookie("refresh", "", {
       httpOnly: true,
       sameSite: "none",
-      secure: true,
     });
   }
 
@@ -152,12 +146,10 @@ export class AuthController {
     response.cookie("access", access, {
       httpOnly: true,
       sameSite: "none",
-      secure: true,
     });
     response.cookie("refresh", refresh, {
       httpOnly: true,
       sameSite: "none",
-      secure: true,
     });
   }
 
