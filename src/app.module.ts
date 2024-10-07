@@ -10,7 +10,7 @@ import { UsersModule } from "./users/users.module";
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ".env",
+      envFilePath: [".env.development", ".env.production"],
       load: [configuration],
     }),
     MongooseModule.forRootAsync({
