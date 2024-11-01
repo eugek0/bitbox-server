@@ -40,6 +40,14 @@ jobs:
             sudo docker kill bitbox-server_server_1
             sudo docker rm bitbox-server_server_1
             sudo docker rmi bitbox-server_server
+            export NODE_ENV=production
+            export PORT={{ secrets.PORT }}
+            export MONGO_URL={{ secrets.MONGO_URL }}
+            export ACCESS_SECRET={{ secrets.ACCESS_SECRET }}
+            export REFRESH_SECRET={{ secrets.REFRESH_SECRET }}
+            export ACCESS_EXPIRES={{ secrets.ACCESS_EXPIRES }}
+            export REFRESH_EXPIRES={{ secrets.REFRESH_EXPIRES }}
+            export ORIGIN={{ secrets.ORIGIN }}
             sudo docker-compose up --build -d
             cd ..
             rm -rf bitbox-server
