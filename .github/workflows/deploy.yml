@@ -37,8 +37,8 @@ jobs:
             cd ~/applications
             git clone https://github.com/${{ github.repository }}.git bitbox-server
             cd bitbox-server
-            sudo docker kill bitbox-client_server_1
-            sudo docker rm bitbox-client_server_1
+            sudo docker kill bitbox-server_server_1
+            sudo docker rm bitbox-server_server_1
             sudo docker rmi bitbox-server_server
             echo ${{ secrets.ENV }} > .env.production
             sudo docker-compose up -d
