@@ -41,7 +41,7 @@ jobs:
             sudo docker rm bitbox-server_server_1
             sudo docker rmi bitbox-server_server
             echo ${{ secrets.ENV }} > .env.production
-            cat .env.production
+            cat .env.production | echo
             sudo docker-compose up --build -d
             cd ..
             rm -rf bitbox-server
