@@ -6,11 +6,14 @@ import * as cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
 import { IConfig } from "./configuration/types";
 import { APP_VERSION } from "./core/types/constants";
+import { LoggerFilter } from "./logger/logger.filter";
+import { LoggerService } from "./logger/logger.service";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const { port, origin } = app.get(ConfigService).get<IConfig>("app");
+  const loggerService = app.get(LoggerService);
 
   app.use(cookieParser());
   app.enableCors({
@@ -19,6 +22,7 @@ async function bootstrap() {
   });
 
   app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalFilters(new LoggerFilter(loggerService));
 
   const documentConfig = new DocumentBuilder()
     .setTitle("Документация к Stash API")
