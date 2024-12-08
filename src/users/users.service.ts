@@ -23,6 +23,18 @@ export class UsersService {
     return await this.userModel.findById(id).lean().exec();
   }
 
+  async getAll(): Promise<User[]> {
+    return await this.userModel.find().lean().exec();
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await this.userModel.find({ role: "user" }).lean().exec();
+  }
+
+  async getAllAdmins(): Promise<User[]> {
+    return await this.userModel.find({ role: "admin" }).lean().exec();
+  }
+
   async create(dto: CreateUserDto): Promise<User | undefined> {
     if (await this.getByEmail(dto.email)) {
       throw new BadRequestException(
@@ -47,6 +59,7 @@ export class UsersService {
         blocks: 6,
         width: 100,
       }).base64,
+      role: dto.role ?? "user",
     });
     return await user.save();
   }

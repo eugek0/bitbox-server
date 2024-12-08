@@ -15,6 +15,7 @@ import { CreateUserDto } from "./dtos";
 import { LoginUserDto } from "./dtos";
 import { ProfileDto } from "./dtos";
 import { ITokenPayload, ITokens } from "./types";
+import { UserRole } from "@/users/types/roles.types";
 
 @Injectable()
 export class AuthService {
@@ -37,6 +38,11 @@ export class AuthService {
 
   async login(dto: LoginUserDto): Promise<ITokens> {
     const user = await this.validate(dto);
+    return this.generateTokens(user);
+  }
+
+  async adminLogin(dto: LoginUserDto): Promise<ITokens> {
+    const user = await this.validate(dto, "admin");
     return this.generateTokens(user);
   }
 
@@ -73,7 +79,10 @@ export class AuthService {
 
   // INFO: Приватные методы
 
-  private async validate(dto: LoginUserDto): Promise<User> {
+  private async validate(
+    dto: LoginUserDto,
+    role: UserRole = "user",
+  ): Promise<User> {
     const user = await this.usersService.getByEmail(dto.email);
 
     if (!user) {
@@ -81,6 +90,10 @@ export class AuthService {
         "Пользователя с таким Email не существует",
         "email",
       );
+    }
+
+    if (user.role !== role) {
+      throw new FormException("У данного пользователя не та роль", "email");
     }
 
     if (!(await bcrypt.compare(dto.password, user.password))) {
@@ -91,20 +104,20 @@ export class AuthService {
   }
 
   private async generateTokens(payload: User): Promise<ITokens> {
-    const { _id, ..._ } = payload;
+    const { _id, role, ..._ } = payload;
     const { accessSecret, accessExpires, refreshSecret, refreshExpires } =
       this.configService.get<IConfig>("app");
 
     return {
       access: await this.jwtService.signAsync(
-        { sub: _id },
+        { sub: _id, role },
         {
           secret: accessSecret,
           expiresIn: accessExpires,
         },
       ),
       refresh: await this.jwtService.signAsync(
-        { sub: _id },
+        { sub: _id, role },
         {
           secret: refreshSecret,
           expiresIn: refreshExpires,
