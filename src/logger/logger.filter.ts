@@ -25,6 +25,7 @@ export class LoggerFilter implements ExceptionFilter {
         exception.message,
       );
 
+      response.status(HttpStatus.INTERNAL_SERVER_ERROR);
       response.json(
         new NotificationException(
           {
@@ -39,6 +40,7 @@ export class LoggerFilter implements ExceptionFilter {
         ).getResponse(),
       );
     } else {
+      response.status(exception.getStatus());
       response.json(exception.getResponse());
     }
   }

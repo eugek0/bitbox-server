@@ -1,3 +1,4 @@
+import { UserRole } from "@/users/types/roles.types";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
 
@@ -39,4 +40,14 @@ export class CreateUserDto {
     minLength: 5,
   })
   readonly password: string;
+
+  @IsString()
+  @ApiProperty({
+    name: "role",
+    description: "Роль пользователя.",
+    type: String,
+    required: false,
+    example: "admin",
+  })
+  readonly role?: UserRole;
 }
