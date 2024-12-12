@@ -1,6 +1,12 @@
 import { UserRole } from "@/users/types/roles.types";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from "class-validator";
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -41,6 +47,7 @@ export class CreateUserDto {
   })
   readonly password: string;
 
+  @IsOptional()
   @IsString()
   @ApiProperty({
     name: "role",

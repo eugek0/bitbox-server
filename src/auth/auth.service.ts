@@ -42,7 +42,7 @@ export class AuthService {
   }
 
   async adminLogin(dto: LoginUserDto): Promise<ITokens> {
-    const user = await this.validate(dto, "admin");
+    const user = await this.validate(dto);
     return this.generateTokens(user);
   }
 
@@ -79,10 +79,7 @@ export class AuthService {
 
   // INFO: Приватные методы
 
-  private async validate(
-    dto: LoginUserDto,
-    role: UserRole = "user",
-  ): Promise<User> {
+  private async validate(dto: LoginUserDto): Promise<User> {
     const user = await this.usersService.getByEmail(dto.email);
 
     if (!user) {
@@ -90,10 +87,6 @@ export class AuthService {
         "Пользователя с таким Email не существует",
         "email",
       );
-    }
-
-    if (user.role !== role) {
-      throw new FormException("У данного пользователя не та роль", "email");
     }
 
     if (!(await bcrypt.compare(dto.password, user.password))) {
