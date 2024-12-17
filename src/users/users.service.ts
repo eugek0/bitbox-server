@@ -27,8 +27,16 @@ export class UsersService {
     return await this.userModel.find().lean().exec();
   }
 
-  async getAllUsers(): Promise<User[]> {
-    return await this.userModel.find({ role: "user" }).lean().exec();
+  async getAllUsers({
+    password = true,
+  }: {
+    password?: boolean;
+  }): Promise<User[]> {
+    return await this.userModel
+      .find({ role: "user" })
+      .lean()
+      .select(password ? null : "-password")
+      .exec();
   }
 
   async getAllAdmins(): Promise<User[]> {

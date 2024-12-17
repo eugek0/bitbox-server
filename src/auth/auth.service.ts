@@ -15,7 +15,6 @@ import { CreateUserDto } from "./dtos";
 import { LoginUserDto } from "./dtos";
 import { ProfileDto } from "./dtos";
 import { ITokenPayload, ITokens } from "./types";
-import { UserRole } from "@/users/types/roles.types";
 
 @Injectable()
 export class AuthService {
