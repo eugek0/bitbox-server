@@ -1,9 +1,15 @@
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+
 export class CreateStorageDto {
+  @IsNotEmpty()
+  @IsString()
   readonly name: string;
 
-  readonly description: string;
+  @IsOptional()
+  @IsString()
+  readonly description?: string;
 
-  readonly owner: string;
-
+  @IsNotEmpty()
+  @IsNumber()
   readonly size: number;
 }

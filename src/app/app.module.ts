@@ -1,6 +1,7 @@
 import { AuthModule } from "@/auth/auth.module";
 import configuration from "@/configuration";
 import { IConfig } from "@/configuration/types";
+import { StoragesModule } from "@/storages/storages.module";
 import { LoggerModule } from "@/logger/logger.module";
 import { UsersModule } from "@/users/users.module";
 import { Module } from "@nestjs/common";
@@ -29,6 +30,7 @@ import { AppStatus, AppStatusSchema } from "./schemas/appStatus.schema";
     UsersModule,
     AuthModule,
     LoggerModule,
+    StoragesModule,
   ],
   providers: [AppService],
   controllers: [AppController],

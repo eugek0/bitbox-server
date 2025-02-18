@@ -1,5 +1,6 @@
+import { User } from "@/users/schemas/user.schema";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument } from "mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
 
 export type StorageDocument = HydratedDocument<Storage>;
 
@@ -13,8 +14,8 @@ export class Storage {
   @Prop()
   readonly description: string;
 
-  @Prop()
-  readonly owner: string;
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }] })
+  readonly owner: User;
 
   @Prop()
   readonly used: number;
