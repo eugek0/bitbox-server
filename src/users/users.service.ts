@@ -6,6 +6,7 @@ import { CreateUserDto } from "@/auth/dtos";
 import * as generateAvatar from "github-like-avatar-generator";
 import * as moment from "moment";
 import * as bcrypt from "bcryptjs";
+import { GetUserDto } from "./dtos/getUser.dto";
 
 @Injectable()
 export class UsersService {
@@ -21,6 +22,13 @@ export class UsersService {
 
   async getById(id: string): Promise<User | undefined> {
     return await this.userModel.findById(id).lean().exec();
+  }
+
+  async get(dto: GetUserDto): Promise<User | undefined> {
+    const filter = Object.fromEntries(
+      Object.entries(dto).filter(([_, value]) => value),
+    );
+    return await this.userModel.findOne(filter).lean().exec();
   }
 
   async getAll(): Promise<User[]> {

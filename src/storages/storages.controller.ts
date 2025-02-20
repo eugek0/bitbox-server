@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { StoragesService } from "./storages.service";
-import { CreateStorageDto } from "./dtos/createStorage.dto";
+import { CreateStorageDto } from "./dtos";
 import { JwtGuard } from "@/auth/jwt.guard";
 import { User } from "@/core/decorators";
 import { Storage } from "./schemas/storage.schema";
