@@ -48,14 +48,14 @@ export class StoragesService {
     }
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(name: string): Promise<void> {
     try {
-      if (await exists(path.join(this.root, id))) {
-        await fs.rm(path.join(this.root, id), { recursive: true });
+      if (await exists(path.join(this.root, name))) {
+        await fs.rm(path.join(this.root, name), { recursive: true });
       } else {
         throw new BadRequestException("Такого хранилища не существует");
       }
-      await this.storageModel.findByIdAndDelete(id);
+      await this.storageModel.findOneAndDelete({ name });
     } catch (error) {
       if (!isHttpException(error)) {
         throw new InternalServerErrorException(
