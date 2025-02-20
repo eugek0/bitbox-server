@@ -4,10 +4,10 @@ import {
   InternalServerErrorException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model, Types } from "mongoose";
+import { Model } from "mongoose";
 import * as path from "path";
 import * as fs from "fs/promises";
-import { CreateStorageDto } from "./dtos/createStorage.dto";
+import { CreateStorageDto } from "./dtos";
 import { Storage } from "./schemas/storage.schema";
 import { exists } from "@/core/utils";
 import { isHttpException } from "@/core/typeguards";
@@ -48,14 +48,14 @@ export class StoragesService {
     }
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(name: string): Promise<void> {
     try {
-      if (await exists(path.join(this.root, id))) {
-        await fs.rm(path.join(this.root, id), { recursive: true });
+      if (await exists(path.join(this.root, name))) {
+        await fs.rm(path.join(this.root, name), { recursive: true });
       } else {
         throw new BadRequestException("Такого хранилища не существует");
       }
-      await this.storageModel.findByIdAndDelete(id);
+      await this.storageModel.findOneAndDelete({ name });
     } catch (error) {
       if (!isHttpException(error)) {
         throw new InternalServerErrorException(

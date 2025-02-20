@@ -3,15 +3,16 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Post,
-  Query,
   UseGuards,
 } from "@nestjs/common";
 import { StoragesService } from "./storages.service";
-import { CreateStorageDto } from "./dtos/createStorage.dto";
+import { CreateStorageDto } from "./dtos";
 import { JwtGuard } from "@/auth/jwt.guard";
 import { User } from "@/core/decorators";
 import { Storage } from "./schemas/storage.schema";
+import { INotification } from "@/core/types";
 
 @Controller("storages")
 export class StoragesController {
@@ -27,13 +28,31 @@ export class StoragesController {
   async create(
     @Body() dto: CreateStorageDto,
     @User() owner: string,
-  ): Promise<void> {
+  ): Promise<INotification> {
     await this.storagesService.create(dto, owner);
+
+    return {
+      notification: {
+        status: "success",
+        config: {
+          message: "Хранилище успешно создано!",
+        },
+      },
+    };
   }
 
-  @Delete()
+  @Delete(":id")
   @UseGuards(JwtGuard)
-  async delete(@Query("id") id: string): Promise<void> {
+  async delete(@Param("id") id: string): Promise<INotification> {
     await this.storagesService.delete(id);
+
+    return {
+      notification: {
+        status: "success",
+        config: {
+          message: "Хранилище успешно удалено!",
+        },
+      },
+    };
   }
 }
