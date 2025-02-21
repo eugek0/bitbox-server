@@ -28,7 +28,11 @@ export class UsersService {
     const filter = Object.fromEntries(
       Object.entries(dto).filter(([_, value]) => value),
     );
-    return await this.userModel.findOne(filter).lean().exec();
+    return await this.userModel
+      .findOne(filter)
+      .select("-password")
+      .lean()
+      .exec();
   }
 
   async getAll(): Promise<User[]> {
