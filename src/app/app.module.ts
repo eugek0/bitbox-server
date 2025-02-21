@@ -9,7 +9,6 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 import { AppService } from "./app.service";
 import { AppController } from "./app.controller";
-import { AppStatus, AppStatusSchema } from "./schemas/appStatus.schema";
 
 @Module({
   imports: [
@@ -24,9 +23,6 @@ import { AppStatus, AppStatusSchema } from "./schemas/appStatus.schema";
         uri: configService.get<IConfig>("app").mongoUri,
       }),
     }),
-    MongooseModule.forFeature([
-      { name: AppStatus.name, schema: AppStatusSchema },
-    ]),
     UsersModule,
     AuthModule,
     LoggerModule,
