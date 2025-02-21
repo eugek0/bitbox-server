@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UseGuards,
 } from "@nestjs/common";
 import { StoragesService } from "./storages.service";
@@ -13,6 +14,7 @@ import { JwtGuard } from "@/auth/jwt.guard";
 import { User } from "@/core/decorators";
 import { Storage } from "./schemas/storage.schema";
 import { INotification } from "@/core/types";
+import { DefaultOptionType } from "antd/es/select";
 
 @Controller("storages")
 export class StoragesController {
@@ -54,5 +56,17 @@ export class StoragesController {
         },
       },
     };
+  }
+
+  @Get("search/options")
+  @UseGuards(JwtGuard)
+  async search(@Query("name") name: string): Promise<DefaultOptionType[]> {
+    if (!name) {
+      return [];
+    }
+
+    const storages = await this.storagesService.search({ name });
+
+    return storages.map((storage) => ({ value: storage.name }));
   }
 }
