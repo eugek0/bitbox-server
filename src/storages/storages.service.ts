@@ -11,6 +11,7 @@ import { CreateStorageDto } from "./dtos";
 import { Storage } from "./schemas/storage.schema";
 import { exists } from "@/core/utils";
 import { isHttpException } from "@/core/typeguards";
+import { FormException } from "@/core/classes";
 
 @Injectable()
 export class StoragesService {
@@ -27,14 +28,15 @@ export class StoragesService {
   async create(dto: CreateStorageDto, owner: string): Promise<void> {
     try {
       if (!(await exists(path.join(this.root, dto.name)))) {
-        await fs.mkdir(path.join(this.root, dto.name));
+        await fs.mkdir(path.join(this.root, dto.name), { recursive: true });
       } else {
-        throw new BadRequestException(
+        throw new FormException(
           "Хранилище с таким именем уже существует",
+          "name",
         );
       }
 
-      const storage = new this.storageModel({ owner, ...dto });
+      const storage = new this.storageModel({ owner, used: 0, ...dto });
 
       await storage.save();
     } catch (error) {
