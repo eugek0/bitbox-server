@@ -15,7 +15,7 @@ async function bootstrap() {
 
   const loggerService = app.get(LoggerService);
   const userService = app.get(UsersService);
-  const { port, origin, adminEmail, adminPassword } = app
+  const { port, origin, adminLogin, adminEmail, adminPassword } = app
     .get(ConfigService)
     .get<IConfig>("app");
 
@@ -29,8 +29,8 @@ async function bootstrap() {
   app.useGlobalFilters(new LoggerFilter(loggerService));
 
   const documentConfig = new DocumentBuilder()
-    .setTitle("Документация к Stash API")
-    .setDescription('Документация к API облачного хранилища файлов "Stash"')
+    .setTitle("Документация к BitBox API")
+    .setDescription('Документация к API облачного хранилища файлов "BitBox"')
     .setVersion(APP_VERSION)
     .setContact("Eugene", "https://t.me/eugek0", "palma21042005@gmail.com")
     .addTag(
@@ -41,12 +41,12 @@ async function bootstrap() {
 
   // INFO: Создание стандартного пользователя администратора
   if (
-    !(await userService.getByEmail(adminEmail)) &&
     adminPassword &&
-    adminEmail
+    adminEmail &&
+    !(await userService.getByEmail(adminEmail))
   ) {
     userService.create({
-      login: "administrator",
+      login: adminLogin ?? "administrator",
       email: adminEmail,
       password: adminPassword,
       role: "admin",

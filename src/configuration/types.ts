@@ -6,6 +6,7 @@ export interface IConfig {
   accessExpires: string;
   refreshSecret: string;
   refreshExpires: string;
+  adminLogin: string;
   adminEmail: string;
   adminPassword: string;
 }
