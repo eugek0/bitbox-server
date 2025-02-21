@@ -9,6 +9,7 @@ const configuration: Configuration = () => ({
     accessExpires: process.env.ACCESS_EXPIRES,
     refreshSecret: process.env.REFRESH_SECRET,
     refreshExpires: process.env.REFRESH_EXPIRES,
+    adminLogin: process.env.ADMIN_LOGIN,
     adminEmail: process.env.ADMIN_EMAIL,
     adminPassword: process.env.ADMIN_PASSWORD,
   },
