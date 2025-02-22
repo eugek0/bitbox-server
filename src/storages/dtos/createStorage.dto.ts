@@ -1,9 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from "class-validator";
 
 export class CreateStorageDto {
   @IsNotEmpty()
   @IsString()
+  @MaxLength(32)
   @ApiProperty({
     name: "name",
     description: "Название хранилища.",
@@ -14,6 +21,7 @@ export class CreateStorageDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(256)
   @ApiProperty({
     name: "description",
     description: "Описание хранилища.",

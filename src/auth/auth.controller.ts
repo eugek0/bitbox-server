@@ -8,12 +8,14 @@ import {
   Res,
   UnauthorizedException,
   UseGuards,
+  UsePipes,
 } from "@nestjs/common";
 import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import { CreateUserDto, LoginUserDto, ProfileDto } from "./dtos";
 import { JwtGuard } from "./jwt.guard";
+import { TrimStringsPipe } from "@/core/pipes";
 
 @Controller("auth")
 export class AuthController {
@@ -38,6 +40,7 @@ export class AuthController {
     description: "Данные для регистрации пользователя.",
     type: CreateUserDto,
   })
+  @UsePipes(TrimStringsPipe)
   @Post("register")
   async register(
     @Body() dto: CreateUserDto,
@@ -71,6 +74,7 @@ export class AuthController {
     description: "Данные, подтверждающие аутентичность пользователя.",
     type: LoginUserDto,
   })
+  @UsePipes(TrimStringsPipe)
   @Post("login")
   async login(
     @Body() dto: LoginUserDto,

@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   UseGuards,
+  UsePipes,
 } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { StoragesService } from "./storages.service";
@@ -17,6 +18,7 @@ import { INotification } from "@/core/types";
 import { DefaultOptionType } from "antd/es/select";
 import { Storage } from "./schemas/storage.schema";
 import { CreateStorageDto } from "./dtos";
+import { TrimStringsPipe } from "@/core/pipes";
 
 @Controller("storages")
 export class StoragesController {
@@ -37,6 +39,7 @@ export class StoragesController {
     status: HttpStatus.CREATED,
     description: "Хранилище создано.",
   })
+  @UsePipes(TrimStringsPipe)
   @Post()
   @UseGuards(JwtGuard)
   async create(
@@ -89,9 +92,11 @@ export class StoragesController {
 
     const storages: DefaultOptionType = {
       label: "Хранилища",
-      options: (await this.storagesService.search({ name })).map((storage) => ({
-        value: storage.name,
-      })),
+      options: (await this.storagesService.search({ name: name.trim() })).map(
+        (storage) => ({
+          value: storage.name,
+        }),
+      ),
     };
 
     return storages?.options?.length ? [storages] : [];
