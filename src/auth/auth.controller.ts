@@ -19,7 +19,7 @@ import { JwtGuard } from "./jwt.guard";
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @ApiTags("Пользователи")
+  @ApiTags("Профиль")
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: "Пользователь зарегистрирован.",
@@ -52,7 +52,7 @@ export class AuthController {
     });
   }
 
-  @ApiTags("Пользователи")
+  @ApiTags("Профиль")
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: "Пользователь авторизован.",
@@ -85,7 +85,7 @@ export class AuthController {
     });
   }
 
-  @ApiTags("Пользователи")
+  @ApiTags("Профиль")
   @ApiResponse({
     status: HttpStatus.OK,
     description: "Токены очищены.",
@@ -106,7 +106,7 @@ export class AuthController {
     });
   }
 
-  @ApiTags("Пользователи")
+  @ApiTags("Профиль")
   @ApiResponse({
     status: HttpStatus.OK,
     description: "Токены обновлены.",
@@ -145,7 +145,7 @@ export class AuthController {
     });
   }
 
-  @ApiTags("Пользователи")
+  @ApiTags("Профиль")
   @ApiResponse({
     status: HttpStatus.OK,
     description: "Данные профиля получены.",
