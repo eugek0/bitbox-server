@@ -65,8 +65,13 @@ export class StoragesController {
       return [];
     }
 
-    const storages = await this.storagesService.search({ name });
+    const storages: DefaultOptionType = {
+      label: "Хранилища",
+      options: (await this.storagesService.search({ name })).map((storage) => ({
+        value: storage.name,
+      })),
+    };
 
-    return storages.map((storage) => ({ value: storage.name }));
+    return storages?.options?.length ? [storages] : [];
   }
 }

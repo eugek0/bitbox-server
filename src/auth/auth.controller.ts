@@ -85,20 +85,6 @@ export class AuthController {
     });
   }
 
-  @Post("admin/login")
-  async adminLogin(
-    @Body() dto: LoginUserDto,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<void> {
-    const { access, refresh } = await this.authService.adminLogin(dto);
-    response.cookie("access", access, {
-      httpOnly: true,
-    });
-    response.cookie("refresh", refresh, {
-      httpOnly: true,
-    });
-  }
-
   @ApiTags("Пользователи")
   @ApiResponse({
     status: HttpStatus.OK,
