@@ -3,28 +3,40 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
   Post,
   Query,
   UseGuards,
 } from "@nestjs/common";
+import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { StoragesService } from "./storages.service";
-import { CreateStorageDto } from "./dtos";
 import { JwtGuard } from "@/auth/jwt.guard";
 import { User } from "@/core/decorators";
-import { Storage } from "./schemas/storage.schema";
 import { INotification } from "@/core/types";
 import { DefaultOptionType } from "antd/es/select";
+import { Storage } from "./schemas/storage.schema";
+import { CreateStorageDto } from "./dtos";
 
 @Controller("storages")
 export class StoragesController {
   constructor(private storagesService: StoragesService) {}
 
+  @ApiTags("Хранилища")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Список хранилищ.",
+  })
   @Get()
   async getStorages(): Promise<Storage[]> {
     return await this.storagesService.getStorages();
   }
 
+  @ApiTags("Хранилища")
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: "Хранилище создано.",
+  })
   @Post()
   @UseGuards(JwtGuard)
   async create(
@@ -43,6 +55,11 @@ export class StoragesController {
     };
   }
 
+  @ApiTags("Хранилища")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Хранилище удалено.",
+  })
   @Delete(":id")
   @UseGuards(JwtGuard)
   async delete(@Param("id") id: string): Promise<INotification> {
@@ -58,6 +75,11 @@ export class StoragesController {
     };
   }
 
+  @ApiTags("Хранилища")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Список хранилищ для выпадающего списка.",
+  })
   @Get("search/options")
   @UseGuards(JwtGuard)
   async search(@Query("name") name: string): Promise<DefaultOptionType[]> {
@@ -65,8 +87,13 @@ export class StoragesController {
       return [];
     }
 
-    const storages = await this.storagesService.search({ name });
+    const storages: DefaultOptionType = {
+      label: "Хранилища",
+      options: (await this.storagesService.search({ name })).map((storage) => ({
+        value: storage.name,
+      })),
+    };
 
-    return storages.map((storage) => ({ value: storage.name }));
+    return storages?.options?.length ? [storages] : [];
   }
 }

@@ -2,23 +2,28 @@ import {
   BadRequestException,
   Controller,
   Get,
+  HttpStatus,
   Query,
   UseGuards,
 } from "@nestjs/common";
+import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { JwtGuard } from "@/auth/jwt.guard";
 import { UsersService } from "./users.service";
 import { User } from "./schemas/user.schema";
-import { JwtGuard } from "@/auth/jwt.guard";
 
 @Controller("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get("list")
-  @UseGuards(JwtGuard)
-  async getUsersList(): Promise<User[]> {
-    return await this.usersService.getAllUsers({ password: false });
-  }
-
+  @ApiTags("Пользователи")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Пользователь.",
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: "Отсутствуют фильтры для поиска.",
+  })
   @Get()
   @UseGuards(JwtGuard)
   async getUser(

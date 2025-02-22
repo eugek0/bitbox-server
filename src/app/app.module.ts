@@ -1,14 +1,13 @@
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { MongooseModule } from "@nestjs/mongoose";
+import { Module } from "@nestjs/common";
 import { AuthModule } from "@/auth/auth.module";
 import configuration from "@/configuration";
 import { IConfig } from "@/configuration/types";
 import { StoragesModule } from "@/storages/storages.module";
 import { LoggerModule } from "@/logger/logger.module";
 import { UsersModule } from "@/users/users.module";
-import { Module } from "@nestjs/common";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { MongooseModule } from "@nestjs/mongoose";
 import { AppService } from "./app.service";
-import { AppController } from "./app.controller";
 
 @Module({
   imports: [
@@ -29,6 +28,5 @@ import { AppController } from "./app.controller";
     StoragesModule,
   ],
   providers: [AppService],
-  controllers: [AppController],
 })
 export class AppModule {}

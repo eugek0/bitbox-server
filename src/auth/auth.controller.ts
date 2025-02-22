@@ -19,7 +19,7 @@ import { JwtGuard } from "./jwt.guard";
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @ApiTags("Пользователи")
+  @ApiTags("Профиль")
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: "Пользователь зарегистрирован.",
@@ -52,7 +52,7 @@ export class AuthController {
     });
   }
 
-  @ApiTags("Пользователи")
+  @ApiTags("Профиль")
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: "Пользователь авторизован.",
@@ -85,21 +85,7 @@ export class AuthController {
     });
   }
 
-  @Post("admin/login")
-  async adminLogin(
-    @Body() dto: LoginUserDto,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<void> {
-    const { access, refresh } = await this.authService.adminLogin(dto);
-    response.cookie("access", access, {
-      httpOnly: true,
-    });
-    response.cookie("refresh", refresh, {
-      httpOnly: true,
-    });
-  }
-
-  @ApiTags("Пользователи")
+  @ApiTags("Профиль")
   @ApiResponse({
     status: HttpStatus.OK,
     description: "Токены очищены.",
@@ -120,7 +106,7 @@ export class AuthController {
     });
   }
 
-  @ApiTags("Пользователи")
+  @ApiTags("Профиль")
   @ApiResponse({
     status: HttpStatus.OK,
     description: "Токены обновлены.",
@@ -159,7 +145,7 @@ export class AuthController {
     });
   }
 
-  @ApiTags("Пользователи")
+  @ApiTags("Профиль")
   @ApiResponse({
     status: HttpStatus.OK,
     description: "Данные профиля получены.",
