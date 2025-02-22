@@ -22,7 +22,7 @@ import { CreateStorageDto } from "./dtos";
 export class StoragesController {
   constructor(private storagesService: StoragesService) {}
 
-  @ApiTags("Хранилище")
+  @ApiTags("Хранилища")
   @ApiResponse({
     status: HttpStatus.OK,
     description: "Список хранилищ.",
@@ -32,7 +32,7 @@ export class StoragesController {
     return await this.storagesService.getStorages();
   }
 
-  @ApiTags("Хранилище")
+  @ApiTags("Хранилища")
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: "Хранилище создано.",
@@ -55,7 +55,7 @@ export class StoragesController {
     };
   }
 
-  @ApiTags("Хранилище")
+  @ApiTags("Хранилища")
   @ApiResponse({
     status: HttpStatus.OK,
     description: "Хранилище удалено.",
@@ -75,7 +75,7 @@ export class StoragesController {
     };
   }
 
-  @ApiTags("Хранилище")
+  @ApiTags("Хранилища")
   @ApiResponse({
     status: HttpStatus.OK,
     description: "Список хранилищ для выпадающего списка.",
