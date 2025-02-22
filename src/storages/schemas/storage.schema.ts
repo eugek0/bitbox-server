@@ -8,7 +8,7 @@ export type StorageDocument = HydratedDocument<Storage>;
 export class Storage {
   _id: string;
 
-  @Prop()
+  @Prop({ unique: true })
   readonly name: string;
 
   @Prop()

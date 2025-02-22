@@ -71,8 +71,11 @@ export class StoragesService {
 
   async search(dto: SearchStoragesDto): Promise<Storage[]> {
     const filter = Object.fromEntries(
-      Object.entries(dto).filter(([_, value]) => value),
+      Object.entries(dto)
+        .filter(([_, value]) => value)
+        .map(([key, value]) => [key, { $regex: value, $options: "i" }]),
     );
+
     return await this.storageModel.find(filter).lean().exec();
   }
 }
