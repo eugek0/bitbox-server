@@ -85,7 +85,9 @@ export class StoragesController {
   })
   @Get("search/options")
   @UseGuards(JwtGuard)
-  async search(@Query("name") name: string): Promise<DefaultOptionType[]> {
+  async searchOptions(
+    @Query("name") name: string,
+  ): Promise<DefaultOptionType[]> {
     if (!name) {
       return [];
     }

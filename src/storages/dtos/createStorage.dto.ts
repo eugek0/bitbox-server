@@ -1,11 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
 import {
+  IsArray,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   MaxLength,
 } from "class-validator";
+import { StorageAccess } from "../types/access.types";
 
 export class CreateStorageDto {
   @IsNotEmpty()
@@ -39,4 +41,24 @@ export class CreateStorageDto {
     required: true,
   })
   readonly size: number;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({
+    name: "access",
+    description: "Режим доступа к хранилищу.",
+    type: String,
+    required: true,
+  })
+  readonly access: StorageAccess;
+
+  @IsOptional()
+  @IsArray()
+  @ApiProperty({
+    name: "members",
+    description: "Пользователи, имеющие доступ к хранилищу в приватном режиме.",
+    type: [String],
+    required: false,
+  })
+  readonly members: string[];
 }

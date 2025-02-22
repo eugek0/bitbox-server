@@ -10,6 +10,7 @@ import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { JwtGuard } from "@/auth/jwt.guard";
 import { UsersService } from "./users.service";
 import { User } from "./schemas/user.schema";
+import { DefaultOptionType } from "antd/es/select";
 
 @Controller("users")
 export class UsersController {
@@ -36,5 +37,17 @@ export class UsersController {
     }
 
     return await this.usersService.get({ _id, email, login });
+  }
+
+  @Get("/options")
+  @UseGuards(JwtGuard)
+  async getOptions(): Promise<DefaultOptionType[]> {
+    const users = await this.usersService.getAllUsers({ password: false });
+
+    return users.map((user) => ({
+      value: user._id,
+      label: user.login,
+      avatar: user.avatar,
+    }));
   }
 }
