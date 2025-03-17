@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import {
   IsArray,
+  IsBoolean,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -61,4 +62,44 @@ export class CreateStorageDto {
     required: false,
   })
   readonly members: string[];
+
+  @IsOptional()
+  @IsBoolean()
+  @ApiProperty({
+    name: "restrict_file_size",
+    description: "Флаг ограничения максимального размера файла",
+    type: Boolean,
+    required: false,
+  })
+  readonly restrict_file_size: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  @ApiProperty({
+    name: "max_file_size",
+    description: "Максимальный размер файла",
+    type: Number,
+    required: false,
+  })
+  readonly max_file_size: number;
+
+  @IsOptional()
+  @IsBoolean()
+  @ApiProperty({
+    name: "restrict_files_count",
+    description: "Флаг ограничения максимального количества файлов",
+    type: Boolean,
+    required: false,
+  })
+  readonly restrict_files_count: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  @ApiProperty({
+    name: "max_files_count",
+    description: "Максимальное количество файлов",
+    type: Number,
+    required: false,
+  })
+  readonly max_files_count: number;
 }

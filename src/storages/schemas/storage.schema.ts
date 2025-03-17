@@ -29,6 +29,18 @@ export class Storage {
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }] })
   readonly members: User[];
+
+  @Prop()
+  readonly restrict_file_size: boolean;
+
+  @Prop()
+  readonly max_file_size: number;
+
+  @Prop()
+  readonly restrict_files_count: boolean;
+
+  @Prop()
+  readonly max_files_count: number;
 }
 
 export const StorageSchema = SchemaFactory.createForClass(Storage);
