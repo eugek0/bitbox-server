@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -15,12 +16,13 @@ import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { StoragesService } from "./storages.service";
 import { JwtGuard } from "@/auth/jwt.guard";
 import { User } from "@/core/decorators";
-import { INotification } from "@/core/types";
+import { INotification, Nullable } from "@/core/types";
 import { DefaultOptionType } from "antd/es/select";
 import { Storage } from "./schemas/storage.schema";
 import { CreateStorageDto } from "./dtos";
 import { TrimStringsPipe } from "@/core/pipes";
 import { Request } from "express";
+import { NotificationException } from "@/core/classes";
 
 @Controller("storages")
 export class StoragesController {
@@ -44,8 +46,26 @@ export class StoragesController {
   })
   @Get(":id")
   @UseGuards(JwtGuard)
-  async getById(@Param("id") id: string): Promise<Storage | undefined> {
-    return await this.storagesService.getById(id);
+  async getById(
+    @Param("id") id: string,
+    @Req() request: Request,
+  ): Promise<Nullable<Storage>> {
+    const storage = await this.storagesService.getAvailableById(
+      id,
+      request.user as string,
+    );
+
+    if (!storage) {
+      throw new NotificationException(
+        {
+          status: "error",
+          config: { message: "Такого хранилища не найдено." },
+        },
+        404,
+      );
+    }
+
+    return storage;
   }
 
   @ApiTags("Хранилища")

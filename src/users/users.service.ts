@@ -7,24 +7,25 @@ import * as generateAvatar from "github-like-avatar-generator";
 import * as moment from "moment";
 import * as bcrypt from "bcryptjs";
 import { GetUserDto } from "./dtos/getUser.dto";
+import { Nullable } from "@/core/types";
 
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  async getByEmail(email: string): Promise<User | undefined> {
+  async getByEmail(email: string): Promise<Nullable<User>> {
     return await this.userModel.findOne({ email }).lean().exec();
   }
 
-  async getByLogin(login: string): Promise<User | undefined> {
+  async getByLogin(login: string): Promise<Nullable<User>> {
     return await this.userModel.findOne({ login }).lean().exec();
   }
 
-  async getById(id: string): Promise<User | undefined> {
+  async getById(id: string): Promise<Nullable<User>> {
     return await this.userModel.findById(id).lean().exec();
   }
 
-  async get(dto: GetUserDto): Promise<User | undefined> {
+  async get(dto: GetUserDto): Promise<Nullable<User>> {
     const filter = Object.fromEntries(
       Object.entries(dto).filter(([_, value]) => value),
     );
@@ -55,7 +56,7 @@ export class UsersService {
     return await this.userModel.find({ role: "admin" }).lean().exec();
   }
 
-  async create(dto: CreateUserDto): Promise<User | undefined> {
+  async create(dto: CreateUserDto): Promise<Nullable<User>> {
     if (await this.getByEmail(dto.email)) {
       throw new BadRequestException(
         "Пользователь с таким Email уже существует",

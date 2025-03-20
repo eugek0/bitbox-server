@@ -1,7 +1,7 @@
 import { Base64 } from "@/core/types";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument } from "mongoose";
-import { UserRole } from "../types/roles.types";
+import { ContactType, UserRole } from "../types/roles.types";
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -26,6 +26,12 @@ export class User {
 
   @Prop()
   readonly role: UserRole;
+
+  @Prop()
+  readonly telegram: string;
+
+  @Prop({ default: "email" })
+  readonly prefered_contacts: ContactType;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

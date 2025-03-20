@@ -11,6 +11,7 @@ import { JwtGuard } from "@/auth/jwt.guard";
 import { UsersService } from "./users.service";
 import { User } from "./schemas/user.schema";
 import { DefaultOptionType } from "antd/es/select";
+import { Nullable } from "@/core/types";
 
 @Controller("users")
 export class UsersController {
@@ -31,7 +32,7 @@ export class UsersController {
     @Query("_id") _id: string,
     @Query("email") email: string,
     @Query("login") login: string,
-  ): Promise<User | undefined> {
+  ): Promise<Nullable<User>> {
     if (!_id && !email && !login) {
       throw new BadRequestException("Отсутствуют фильтры для поиска");
     }
