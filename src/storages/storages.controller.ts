@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Query,
+  Req,
   UseGuards,
   UsePipes,
 } from "@nestjs/common";
@@ -19,6 +20,7 @@ import { DefaultOptionType } from "antd/es/select";
 import { Storage } from "./schemas/storage.schema";
 import { CreateStorageDto } from "./dtos";
 import { TrimStringsPipe } from "@/core/pipes";
+import { Request } from "express";
 
 @Controller("storages")
 export class StoragesController {
@@ -30,8 +32,20 @@ export class StoragesController {
     description: "Список хранилищ.",
   })
   @Get()
-  async getStorages(): Promise<Storage[]> {
-    return await this.storagesService.getStorages();
+  @UseGuards(JwtGuard)
+  async get(@Req() request: Request): Promise<Storage[]> {
+    return await this.storagesService.getAvailable(request.user as string);
+  }
+
+  @ApiTags("Хранилища")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Получить информацию о хранилище.",
+  })
+  @Get(":id")
+  @UseGuards(JwtGuard)
+  async getById(@Param("id") id: string): Promise<Storage | undefined> {
+    return await this.storagesService.getById(id);
   }
 
   @ApiTags("Хранилища")

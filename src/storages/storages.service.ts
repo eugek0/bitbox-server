@@ -12,17 +12,37 @@ import { Storage } from "./schemas/storage.schema";
 import { exists } from "@/core/utils";
 import { isHttpException } from "@/core/typeguards";
 import { FormException } from "@/core/classes";
+import { UsersService } from "@/users/users.service";
 
 @Injectable()
 export class StoragesService {
   constructor(
     @InjectModel(Storage.name) private storageModel: Model<Storage>,
+    private usersService: UsersService,
   ) {}
 
   private root: string = path.resolve(__dirname, "..", "..", "storages");
 
   async getStorages(): Promise<Storage[]> {
     return await this.storageModel.find().lean();
+  }
+
+  async getAvailable(userId: string): Promise<Storage[]> {
+    const questioner = await this.usersService.getById(userId);
+
+    if (questioner.role === "admin") {
+      return this.storageModel.find().lean();
+    }
+
+    return this.storageModel
+      .find({
+        $or: [{ access: "public" }, { owner: userId }, { members: userId }],
+      })
+      .lean();
+  }
+
+  async getById(id: string): Promise<Storage | undefined> {
+    return await this.storageModel.findById(id).lean();
   }
 
   async create(dto: CreateStorageDto, owner: string): Promise<void> {
