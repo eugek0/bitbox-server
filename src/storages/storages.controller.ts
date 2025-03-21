@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,7 +8,9 @@ import {
   Post,
   Query,
   Req,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
   UsePipes,
 } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
@@ -23,6 +24,9 @@ import { CreateStorageDto } from "./dtos";
 import { TrimStringsPipe } from "@/core/pipes";
 import { Request } from "express";
 import { NotificationException } from "@/core/classes";
+import { UploadFilesDto } from "./dtos/uploadFiles.dto";
+import { FilesInterceptor } from "@nestjs/platform-express";
+import { Entity } from "./schemas/entity.schema";
 
 @Controller("storages")
 export class StoragesController {
@@ -36,7 +40,9 @@ export class StoragesController {
   @Get()
   @UseGuards(JwtGuard)
   async get(@Req() request: Request): Promise<Storage[]> {
-    return await this.storagesService.getAvailable(request.user as string);
+    return await this.storagesService.getAvailableStorages(
+      request.user as string,
+    );
   }
 
   @ApiTags("Хранилища")
@@ -50,7 +56,7 @@ export class StoragesController {
     @Param("id") id: string,
     @Req() request: Request,
   ): Promise<Nullable<Storage>> {
-    const storage = await this.storagesService.getAvailableById(
+    const storage = await this.storagesService.getAvailableStoragesById(
       id,
       request.user as string,
     );
@@ -80,7 +86,7 @@ export class StoragesController {
     @Body() dto: CreateStorageDto,
     @User() owner: string,
   ): Promise<INotification> {
-    await this.storagesService.create(dto, owner);
+    await this.storagesService.createStorage(dto, owner);
 
     return {
       notification: {
@@ -100,7 +106,7 @@ export class StoragesController {
   @Delete(":id")
   @UseGuards(JwtGuard)
   async delete(@Param("id") id: string): Promise<INotification> {
-    await this.storagesService.delete(id);
+    await this.storagesService.deleteStorage(id);
 
     return {
       notification: {
@@ -128,13 +134,42 @@ export class StoragesController {
 
     const storages: DefaultOptionType = {
       label: "Хранилища",
-      options: (await this.storagesService.search({ name: name.trim() })).map(
-        (storage) => ({
-          value: storage.name,
-        }),
-      ),
+      options: (
+        await this.storagesService.searchStorages({ name: name.trim() })
+      ).map((storage) => ({
+        value: storage.name,
+      })),
     };
 
     return storages?.options?.length ? [storages] : [];
+  }
+
+  @ApiTags("Хранилища")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Список сущностей хранилища.",
+  })
+  @Get(":storage/entities")
+  @UseGuards(JwtGuard)
+  async getStorageEntities(
+    @Param("storage") storage: string,
+    @Query("path") path: string,
+  ): Promise<Entity[]> {
+    return await this.storagesService.getStorageEntities(storage, path);
+  }
+
+  @ApiTags("Хранилища")
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+  })
+  @Post("upload/:storage")
+  @UseInterceptors(FilesInterceptor("entities"))
+  @UseGuards(JwtGuard)
+  async uploadFiles(
+    @Body() dto: UploadFilesDto,
+    @Param("storage") storage: string,
+    @UploadedFiles() entities: Express.Multer.File[],
+  ): Promise<void> {
+    await this.storagesService.uploadEntities(entities, storage, dto.path);
   }
 }

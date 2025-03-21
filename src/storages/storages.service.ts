@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import * as path from "path";
+import * as p from "path";
 import * as fs from "fs/promises";
 import { CreateStorageDto, SearchStoragesDto } from "./dtos";
 import { Storage } from "./schemas/storage.schema";
@@ -16,21 +16,27 @@ import { isHttpException } from "@/core/typeguards";
 import { FormException } from "@/core/classes";
 import { UsersService } from "@/users/users.service";
 import { Nullable } from "@/core/types";
+import { Entity, EntityDocument } from "./schemas/entity.schema";
 
 @Injectable()
 export class StoragesService {
   constructor(
     @InjectModel(Storage.name) private storageModel: Model<Storage>,
+    @InjectModel(Entity.name) private entityModel: Model<Entity>,
     private usersService: UsersService,
   ) {}
 
-  private root: string = path.resolve(__dirname, "..", "..", "storages");
+  private root: string = p.resolve(__dirname, "..", "..", "storages");
 
   async getStorages(): Promise<Storage[]> {
     return await this.storageModel.find().lean();
   }
 
-  async getAvailable(userid: string): Promise<Storage[]> {
+  async getStorageById(id: string): Promise<Nullable<Storage>> {
+    return await this.storageModel.findById(id).lean();
+  }
+
+  async getAvailableStorages(userid: string): Promise<Storage[]> {
     const questioner = await this.usersService.getById(userid);
 
     if (questioner.role === "admin") {
@@ -44,7 +50,7 @@ export class StoragesService {
       .lean();
   }
 
-  async getAvailableById(
+  async getAvailableStoragesById(
     id: string,
     userid: string,
   ): Promise<Nullable<Storage>> {
@@ -70,10 +76,10 @@ export class StoragesService {
     return storage;
   }
 
-  async create(dto: CreateStorageDto, owner: string): Promise<void> {
+  async createStorage(dto: CreateStorageDto, owner: string): Promise<void> {
     try {
-      if (!(await exists(path.join(this.root, dto.name)))) {
-        await fs.mkdir(path.join(this.root, dto.name), { recursive: true });
+      if (!(await exists(p.join(this.root, dto.name)))) {
+        await fs.mkdir(p.join(this.root, dto.name), { recursive: true });
       } else {
         throw new FormException(
           "Хранилище с таким именем уже существует",
@@ -95,10 +101,10 @@ export class StoragesService {
     }
   }
 
-  async delete(name: string): Promise<void> {
+  async deleteStorage(name: string): Promise<void> {
     try {
-      if (await exists(path.join(this.root, name))) {
-        await fs.rm(path.join(this.root, name), { recursive: true });
+      if (await exists(p.join(this.root, name))) {
+        await fs.rm(p.join(this.root, name), { recursive: true });
       } else {
         throw new BadRequestException("Такого хранилища не существует");
       }
@@ -114,7 +120,7 @@ export class StoragesService {
     }
   }
 
-  async search(dto: SearchStoragesDto): Promise<Storage[]> {
+  async searchStorages(dto: SearchStoragesDto): Promise<Storage[]> {
     const filter = Object.fromEntries(
       Object.entries(dto)
         .filter(([_, value]) => value)
@@ -122,5 +128,57 @@ export class StoragesService {
     );
 
     return await this.storageModel.find(filter).lean().exec();
+  }
+
+  async getStorageEntities(storageid: string, path: string): Promise<Entity[]> {
+    return await this.entityModel.find({ storage: storageid, path }).lean();
+  }
+
+  async uploadEntities(
+    entities: Express.Multer.File[],
+    storageid: string,
+    path: string,
+  ): Promise<void> {
+    const storage = await this.getStorageById(storageid);
+    const newEntities: EntityDocument[] = [];
+
+    if (!storage) {
+      throw new NotFoundException("Такого хранилища не существует");
+    }
+
+    if (!(await exists(p.join(this.root, storage.name, path)))) {
+      throw new NotFoundException("Директории по такому пути не существует");
+    }
+
+    try {
+      for (const file of entities) {
+        const [name, extension] = file.originalname.split(/\.(?!.*\.)/);
+        const newFilePath = p.join(
+          this.root,
+          storage.name,
+          path,
+          file.originalname,
+        );
+
+        if (!(await exists(newFilePath)))
+          newEntities.push(
+            new this.entityModel({
+              storage: storageid,
+              type: "file",
+              extension,
+              name,
+              path,
+            }),
+          );
+
+        await fs.writeFile(newFilePath, file.buffer);
+      }
+    } catch (error) {
+      throw new InternalServerErrorException(
+        "Ошибка при записи файлов в хранилище",
+      );
+    }
+
+    await this.entityModel.bulkSave(newEntities);
   }
 }

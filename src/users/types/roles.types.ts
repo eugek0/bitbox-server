@@ -1,3 +1,1 @@
-export type UserRole = "admin" | "user";
-
-export type ContactType = "email" | "telegram" | "none";
+export type UserRole = "admin" | "user" | "developer";
