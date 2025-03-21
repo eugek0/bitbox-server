@@ -160,17 +160,22 @@ export class StoragesService {
           file.originalname,
         );
 
-        if (!(await exists(newFilePath)))
+        if (file.size > storage.max_file_size) {
+          continue;
+        }
+
+        if (!(await exists(newFilePath))) {
           newEntities.push(
             new this.entityModel({
               storage: storageid,
+              size: file.size,
               type: "file",
               extension,
               name,
               path,
             }),
           );
-
+        }
         await fs.writeFile(newFilePath, file.buffer);
       }
     } catch (error) {

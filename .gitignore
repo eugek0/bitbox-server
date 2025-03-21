@@ -13,7 +13,7 @@ yarn-error.log*
 lerna-debug.log*
 
 # Storage
-storage/*
+storages/*
 
 # OS
 .DS_Store

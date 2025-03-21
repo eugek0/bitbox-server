@@ -18,6 +18,9 @@ export class Entity {
   @Prop()
   readonly type: EntityType;
 
+  @Prop()
+  readonly size: number;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Storage.name })
   readonly storage: string;
 
