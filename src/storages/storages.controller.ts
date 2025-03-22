@@ -124,6 +124,7 @@ export class StoragesController {
   @UseGuards(JwtGuard)
   async searchOptions(
     @Query("name") name: string,
+    @User() questioner: string,
   ): Promise<DefaultOptionType[]> {
     if (!name) {
       return [];
@@ -132,7 +133,12 @@ export class StoragesController {
     const storages: DefaultOptionType = {
       label: "Хранилища",
       options: (
-        await this.storagesService.searchStorages({ name: name.trim() })
+        await this.storagesService.searchStorages(
+          {
+            name: name.trim(),
+          },
+          questioner,
+        )
       ).map((storage) => ({
         value: storage.name,
         _id: storage._id,

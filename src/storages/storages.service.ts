@@ -17,6 +17,7 @@ import { UsersService } from "@/users/users.service";
 import { Nullable } from "@/core/types";
 import { Entity, EntityDocument } from "./schemas/entity.schema";
 import { convertBytes } from "@/core/utils";
+import { User } from "@/users/schemas/user.schema";
 
 @Injectable()
 export class StoragesService {
@@ -100,14 +101,21 @@ export class StoragesService {
     }
   }
 
-  async searchStorages(dto: SearchStoragesDto): Promise<Storage[]> {
+  async searchStorages(
+    dto: SearchStoragesDto,
+    questionerid: string,
+  ): Promise<Storage[]> {
+    const questioner = await this.usersService.getById(questionerid);
+
     const filter = Object.fromEntries(
       Object.entries(dto)
         .filter(([_, value]) => value)
         .map(([key, value]) => [key, { $regex: value, $options: "i" }]),
     );
 
-    return await this.storageModel.find(filter).lean().exec();
+    const storages = await this.storageModel.find(filter).lean().exec();
+
+    return storages.filter((storage) => this.checkAccess(questioner, storage));
   }
 
   async getStorageEntities(storageid: string, path: string): Promise<Entity[]> {
@@ -233,5 +241,16 @@ export class StoragesService {
     await this.storageModel.findByIdAndUpdate(storage._id, {
       used: storage.used + totalEntitiesSize,
     });
+  }
+
+  private checkAccess(questioner: User, storage: Storage) {
+    const result =
+      questioner.role === "admin" ||
+      storage.access === "public" ||
+      storage.owner.toString() === questioner._id.toString() ||
+      storage.members.some(
+        (member) => member.toString() === questioner._id.toString(),
+      );
+    return result;
   }
 }
