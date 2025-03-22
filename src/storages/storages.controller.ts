@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   Res,
   UploadedFiles,
@@ -20,7 +21,7 @@ import { User } from "@/core/decorators";
 import { INotification, Nullable } from "@/core/types";
 import { DefaultOptionType } from "antd/es/select";
 import { Storage } from "./schemas/storage.schema";
-import { CreateStorageDto } from "./dtos";
+import { CreateEditStorageDto } from "./dtos";
 import { TrimStringsPipe } from "@/core/pipes";
 import { Response } from "express";
 import { NotificationException } from "@/core/classes";
@@ -78,7 +79,7 @@ export class StoragesController {
   @Post()
   @UseGuards(JwtGuard)
   async createStorage(
-    @Body() dto: CreateStorageDto,
+    @Body() dto: CreateEditStorageDto,
     @User() owner: string,
   ): Promise<INotification> {
     await this.storagesService.createStorage(dto, owner);
@@ -88,6 +89,30 @@ export class StoragesController {
         status: "success",
         config: {
           message: "Хранилище успешно создано!",
+        },
+      },
+    };
+  }
+
+  @ApiTags("Хранилища")
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: "Хранилище создано.",
+  })
+  @UsePipes(TrimStringsPipe)
+  @Put(":storageid")
+  @UseGuards(JwtGuard, StorageGuard(true))
+  async editStorage(
+    @Param("storageid") storageid: string,
+    @Body() dto: CreateEditStorageDto,
+  ): Promise<INotification> {
+    await this.storagesService.editStorage(dto, storageid);
+
+    return {
+      notification: {
+        status: "success",
+        config: {
+          message: "Хранилище успешно изменено!",
         },
       },
     };

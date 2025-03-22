@@ -8,7 +8,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import * as p from "path";
 import * as fs from "fs/promises";
-import { CreateStorageDto, SearchStoragesDto } from "./dtos";
+import { CreateEditStorageDto, SearchStoragesDto } from "./dtos";
 import { Storage } from "./schemas/storage.schema";
 import { exists } from "@/core/utils";
 import { isHttpException } from "@/core/typeguards";
@@ -37,6 +37,10 @@ export class StoragesService {
     return await this.storageModel.findById(id).lean();
   }
 
+  async getStorageByName(name: string): Promise<Nullable<Storage>> {
+    return await this.storageModel.findOne({ name }).lean();
+  }
+
   async getAvailableStorages(userid: string): Promise<Storage[]> {
     const questioner = await this.usersService.getById(userid);
 
@@ -51,20 +55,41 @@ export class StoragesService {
       .lean();
   }
 
-  async createStorage(dto: CreateStorageDto, owner: string): Promise<void> {
+  async createStorage(dto: CreateEditStorageDto, owner: string): Promise<void> {
     try {
-      if (!(await exists(p.join(this.root, dto.name)))) {
-        await fs.mkdir(p.join(this.root, dto.name), { recursive: true });
-      } else {
+      if (await this.getStorageByName(dto.name)) {
         throw new FormException(
           "Хранилище с таким именем уже существует",
           "name",
         );
       }
-
       const storage = new this.storageModel({ owner, used: 0, ...dto });
+      await fs.mkdir(p.join(this.root, storage._id.toString()), {
+        recursive: true,
+      });
 
       await storage.save();
+    } catch (error) {
+      if (!isHttpException) {
+        throw new InternalServerErrorException(
+          "Произошла ошибка при создании хранилища",
+        );
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  async editStorage(
+    dto: CreateEditStorageDto,
+    storageid: string,
+  ): Promise<void> {
+    try {
+      if (!(await this.getStorageById(storageid))) {
+        throw new NotFoundException("Такого хранилища не существует");
+      }
+
+      await this.storageModel.findByIdAndUpdate(storageid, dto);
     } catch (error) {
       if (!isHttpException) {
         throw new InternalServerErrorException(

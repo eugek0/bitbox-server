@@ -10,7 +10,7 @@ import {
 } from "class-validator";
 import { StorageAccess } from "../types/access.types";
 
-export class CreateStorageDto {
+export class CreateEditStorageDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(32)
