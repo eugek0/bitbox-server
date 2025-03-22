@@ -109,8 +109,10 @@ export class StoragesService {
         throw new NotFoundException("Такого хранилища не существует");
       }
 
-      if (await exists(p.join(this.root, storage.name))) {
-        await fs.rm(p.join(this.root, storage.name), { recursive: true });
+      if (await exists(p.join(this.root, storage._id.toString()))) {
+        await fs.rm(p.join(this.root, storage._id.toString()), {
+          recursive: true,
+        });
       } else {
         throw new BadRequestException("Такого хранилища не существует");
       }
