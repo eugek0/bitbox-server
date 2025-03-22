@@ -50,7 +50,7 @@ export class StoragesController {
     description: "Получить информацию о хранилище.",
   })
   @Get(":storageid")
-  @UseGuards(JwtGuard, StorageGuard)
+  @UseGuards(JwtGuard, StorageGuard())
   async getStorageById(
     @Param("storageid") storageid: string,
   ): Promise<Nullable<Storage>> {
@@ -99,7 +99,7 @@ export class StoragesController {
     description: "Хранилище удалено.",
   })
   @Delete(":storageid")
-  @UseGuards(JwtGuard, StorageGuard)
+  @UseGuards(JwtGuard, StorageGuard(true))
   async deleteStorage(
     @Param("storageid") storageid: string,
   ): Promise<INotification> {
@@ -148,7 +148,7 @@ export class StoragesController {
     description: "Список сущностей хранилища.",
   })
   @Get(":storageid/entities")
-  @UseGuards(JwtGuard, StorageGuard)
+  @UseGuards(JwtGuard, StorageGuard())
   async getStorageEntities(
     @Param("storageid") storageid: string,
     @Query("path") path: string,
@@ -157,7 +157,7 @@ export class StoragesController {
   }
 
   @Get(":storageid/entity/:entityid")
-  @UseGuards(JwtGuard, StorageGuard)
+  @UseGuards(JwtGuard, StorageGuard())
   async getEntityById(
     @Param("entityid") entityid: string,
   ): Promise<Nullable<Entity>> {
@@ -165,7 +165,7 @@ export class StoragesController {
   }
 
   @Get(":storageid/file/:fileid")
-  @UseGuards(JwtGuard, StorageGuard)
+  @UseGuards(JwtGuard, StorageGuard())
   async getFileById(
     @Param("fileid") fileid: string,
     @Res() response: Response,
@@ -180,7 +180,7 @@ export class StoragesController {
   })
   @Post("upload/:storageid")
   @UseInterceptors(FilesInterceptor("entities"))
-  @UseGuards(JwtGuard, StorageGuard)
+  @UseGuards(JwtGuard, StorageGuard())
   async uploadFiles(
     @Body() dto: UploadFilesDto,
     @Param("storageid") storageid: string,

@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -76,14 +75,20 @@ export class StoragesService {
     }
   }
 
-  async deleteStorage(name: string): Promise<void> {
+  async deleteStorage(storageid: string): Promise<void> {
     try {
-      if (await exists(p.join(this.root, name))) {
-        await fs.rm(p.join(this.root, name), { recursive: true });
+      const storage = await this.getStorageById(storageid);
+
+      if (!storage) {
+        throw new NotFoundException("Такого хранилища не существует");
+      }
+
+      if (await exists(p.join(this.root, storage.name))) {
+        await fs.rm(p.join(this.root, storage.name), { recursive: true });
       } else {
         throw new BadRequestException("Такого хранилища не существует");
       }
-      await this.storageModel.findOneAndDelete({ name });
+      await this.storageModel.findByIdAndDelete(storageid);
     } catch (error) {
       if (!isHttpException(error)) {
         throw new InternalServerErrorException(
