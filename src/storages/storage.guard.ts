@@ -35,8 +35,14 @@ export class StorageGuard implements CanActivate {
     if (!this.validate(questioner, storage)) {
       throw new ForbiddenException({
         message: "У вас нет доступа к этому хранилищу.",
-        contacts: owner?.[owner?.prefered_contacts ?? "none"],
-        type: owner?.prefered_contacts,
+        contacts:
+          owner.prefered_contacts !== "none"
+            ? owner?.[owner?.prefered_contacts]
+            : undefined,
+        type:
+          owner.prefered_contacts !== "none"
+            ? owner?.prefered_contacts
+            : undefined,
       });
     }
 
