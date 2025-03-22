@@ -51,34 +51,6 @@ export class StoragesService {
       .lean();
   }
 
-  async getAvailableStoragesById(
-    id: string,
-    userid: string,
-  ): Promise<Nullable<Storage>> {
-    const questioner = await this.usersService.getById(userid);
-    const storage = await this.storageModel.findById(id).lean();
-
-    if (!storage) {
-      throw new NotFoundException("Такого хранилища не существует.");
-    }
-
-    if (
-      questioner.role !== "admin" &&
-      storage.access !== "public" &&
-      storage.owner.toString() !== userid &&
-      !storage.members.some((member) => member.toString() === userid)
-    ) {
-      const owner = await this.usersService.getById(storage.owner.toString());
-      throw new ForbiddenException({
-        message: "У вас нет доступа к этому хранилищу.",
-        contacts: owner?.[owner?.prefered_contacts ?? "none"],
-        type: owner?.prefered_contacts,
-      });
-    }
-
-    return storage;
-  }
-
   async createStorage(dto: CreateStorageDto, owner: string): Promise<void> {
     try {
       if (!(await exists(p.join(this.root, dto.name)))) {

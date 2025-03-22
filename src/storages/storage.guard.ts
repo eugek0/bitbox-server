@@ -1,6 +1,11 @@
 import { JwtPayload } from "@/core/types/jwt.types";
 import { UsersService } from "@/users/users.service";
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+} from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
 import { StoragesService } from "./storages.service";
@@ -25,8 +30,17 @@ export class StorageGuard implements CanActivate {
     const storage = await this.storagesService.getStorageById(
       request.params.storageid,
     );
+    const owner = await this.usersService.getById(storage.owner.toString());
 
-    return this.validate(questioner, storage);
+    if (!this.validate(questioner, storage)) {
+      throw new ForbiddenException({
+        message: "У вас нет доступа к этому хранилищу.",
+        contacts: owner?.[owner?.prefered_contacts ?? "none"],
+        type: owner?.prefered_contacts,
+      });
+    }
+
+    return true;
   }
 
   private validate(questioner: User, storage: Storage): boolean {

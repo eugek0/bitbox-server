@@ -53,12 +53,8 @@ export class StoragesController {
   @UseGuards(JwtGuard, StorageGuard)
   async getStorageById(
     @Param("storageid") storageid: string,
-    @User() questioner: string,
   ): Promise<Nullable<Storage>> {
-    const storage = await this.storagesService.getAvailableStoragesById(
-      storageid,
-      questioner,
-    );
+    const storage = await this.storagesService.getStorageById(storageid);
 
     if (!storage) {
       throw new NotificationException(
