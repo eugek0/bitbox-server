@@ -50,12 +50,13 @@ export class StorageGuard implements CanActivate {
   }
 
   private validate(questioner: User, storage: Storage): boolean {
-    return (
+    const result =
       questioner.role === "admin" ||
+      storage.access === "public" ||
       storage.owner.toString() === questioner._id.toString() ||
       storage.members.some(
         (member) => member.toString() === questioner._id.toString(),
-      )
-    );
+      );
+    return result;
   }
 }
