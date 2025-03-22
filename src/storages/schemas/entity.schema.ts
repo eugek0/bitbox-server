@@ -16,6 +16,9 @@ export class Entity {
   readonly extension: string;
 
   @Prop()
+  readonly fullname: string;
+
+  @Prop()
   readonly type: EntityType;
 
   @Prop()

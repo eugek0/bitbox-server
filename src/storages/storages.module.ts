@@ -5,6 +5,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { Storage, StorageSchema } from "./schemas/storage.schema";
 import { UsersModule } from "@/users/users.module";
 import { Entity, EntitySchema } from "./schemas/entity.schema";
+import { JwtModule } from "@nestjs/jwt";
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { Entity, EntitySchema } from "./schemas/entity.schema";
       { schema: EntitySchema, name: Entity.name },
     ]),
     UsersModule,
+    JwtModule,
   ],
   providers: [StoragesService],
   controllers: [StoragesController],

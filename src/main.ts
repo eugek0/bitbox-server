@@ -4,7 +4,7 @@ import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import * as cookieParser from "cookie-parser";
 import { IConfig } from "./configuration/types";
-import { APP_VERSION } from "./core/types/constants";
+import { APP_VERSION } from "./core/constants";
 import { LoggerFilter } from "./logger/logger.filter";
 import { LoggerService } from "./logger/logger.service";
 import { AppModule } from "./app/app.module";

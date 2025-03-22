@@ -7,7 +7,7 @@ import {
   Param,
   Post,
   Query,
-  Req,
+  Res,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -22,11 +22,12 @@ import { DefaultOptionType } from "antd/es/select";
 import { Storage } from "./schemas/storage.schema";
 import { CreateStorageDto } from "./dtos";
 import { TrimStringsPipe } from "@/core/pipes";
-import { Request } from "express";
+import { Response } from "express";
 import { NotificationException } from "@/core/classes";
 import { UploadFilesDto } from "./dtos/uploadFiles.dto";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import { Entity } from "./schemas/entity.schema";
+import { StorageGuard } from "./storage.guard";
 
 @Controller("storages")
 export class StoragesController {
@@ -39,10 +40,8 @@ export class StoragesController {
   })
   @Get()
   @UseGuards(JwtGuard)
-  async get(@Req() request: Request): Promise<Storage[]> {
-    return await this.storagesService.getAvailableStorages(
-      request.user as string,
-    );
+  async getAvailableStorages(@User() questioner: string): Promise<Storage[]> {
+    return await this.storagesService.getAvailableStorages(questioner);
   }
 
   @ApiTags("Хранилища")
@@ -50,15 +49,15 @@ export class StoragesController {
     status: HttpStatus.OK,
     description: "Получить информацию о хранилище.",
   })
-  @Get(":id")
-  @UseGuards(JwtGuard)
-  async getById(
-    @Param("id") id: string,
-    @Req() request: Request,
+  @Get(":storageid")
+  @UseGuards(JwtGuard, StorageGuard)
+  async getStorageById(
+    @Param("storageid") storageid: string,
+    @User() questioner: string,
   ): Promise<Nullable<Storage>> {
     const storage = await this.storagesService.getAvailableStoragesById(
-      id,
-      request.user as string,
+      storageid,
+      questioner,
     );
 
     if (!storage) {
@@ -82,7 +81,7 @@ export class StoragesController {
   @UsePipes(TrimStringsPipe)
   @Post()
   @UseGuards(JwtGuard)
-  async create(
+  async createStorage(
     @Body() dto: CreateStorageDto,
     @User() owner: string,
   ): Promise<INotification> {
@@ -103,10 +102,12 @@ export class StoragesController {
     status: HttpStatus.OK,
     description: "Хранилище удалено.",
   })
-  @Delete(":id")
-  @UseGuards(JwtGuard)
-  async delete(@Param("id") id: string): Promise<INotification> {
-    await this.storagesService.deleteStorage(id);
+  @Delete(":storageid")
+  @UseGuards(JwtGuard, StorageGuard)
+  async deleteStorage(
+    @Param("storageid") storageid: string,
+  ): Promise<INotification> {
+    await this.storagesService.deleteStorage(storageid);
 
     return {
       notification: {
@@ -150,27 +151,45 @@ export class StoragesController {
     status: HttpStatus.OK,
     description: "Список сущностей хранилища.",
   })
-  @Get(":storage/entities")
-  @UseGuards(JwtGuard)
+  @Get(":storageid/entities")
+  @UseGuards(JwtGuard, StorageGuard)
   async getStorageEntities(
-    @Param("storage") storage: string,
+    @Param("storageid") storageid: string,
     @Query("path") path: string,
   ): Promise<Entity[]> {
-    return await this.storagesService.getStorageEntities(storage, path);
+    return await this.storagesService.getStorageEntities(storageid, path);
+  }
+
+  @Get(":storageid/entity/:entityid")
+  @UseGuards(JwtGuard, StorageGuard)
+  async getEntityById(
+    @Param("entityid") entityid: string,
+  ): Promise<Nullable<Entity>> {
+    return await this.storagesService.getEntityById(entityid);
+  }
+
+  @Get(":storageid/file/:fileid")
+  @UseGuards(JwtGuard, StorageGuard)
+  async getFileById(
+    @Param("fileid") fileid: string,
+    @Res() response: Response,
+  ): Promise<void> {
+    const path = await this.storagesService.getFileBufferById(fileid);
+    response.sendFile(path, { dotfiles: "allow" });
   }
 
   @ApiTags("Хранилища")
   @ApiResponse({
     status: HttpStatus.CREATED,
   })
-  @Post("upload/:storage")
+  @Post("upload/:storageid")
   @UseInterceptors(FilesInterceptor("entities"))
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, StorageGuard)
   async uploadFiles(
     @Body() dto: UploadFilesDto,
-    @Param("storage") storage: string,
+    @Param("storageid") storageid: string,
     @UploadedFiles() entities: Express.Multer.File[],
   ): Promise<void> {
-    await this.storagesService.uploadEntities(entities, storage, dto.path);
+    await this.storagesService.uploadEntities(entities, storageid, dto.path);
   }
 }

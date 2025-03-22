@@ -137,6 +137,27 @@ export class StoragesService {
     return await this.entityModel.find({ storage: storageid, path }).lean();
   }
 
+  async getEntityById(id: string): Promise<Nullable<Entity>> {
+    return await this.entityModel.findById(id).lean();
+  }
+
+  async getFileBufferById(id: string): Promise<string> {
+    const entity = await this.getEntityById(id);
+    const storage = await this.getStorageById(entity.storage);
+
+    const path = p.join(this.root, storage.name, entity.fullname);
+
+    if (entity.type !== "file") {
+      throw new BadRequestException("Данная сущность не является файлом");
+    }
+
+    if (!exists(path)) {
+      throw new NotFoundException("Такого файла не существует");
+    }
+
+    return path;
+  }
+
   async uploadEntities(
     entities: Express.Multer.File[],
     storageid: string,
@@ -213,6 +234,7 @@ export class StoragesService {
         if (!(await exists(newFilePath))) {
           newEntities.push(
             new this.entityModel({
+              fullname: entity.originalname,
               storage: storageid,
               size: entity.size,
               type: "file",
