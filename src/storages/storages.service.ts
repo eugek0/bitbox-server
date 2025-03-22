@@ -13,10 +13,11 @@ import { CreateStorageDto, SearchStoragesDto } from "./dtos";
 import { Storage } from "./schemas/storage.schema";
 import { exists } from "@/core/utils";
 import { isHttpException } from "@/core/typeguards";
-import { FormException } from "@/core/classes";
+import { FormException, NotificationException } from "@/core/classes";
 import { UsersService } from "@/users/users.service";
 import { Nullable } from "@/core/types";
 import { Entity, EntityDocument } from "./schemas/entity.schema";
+import { convertBytes } from "@/core/utils";
 
 @Injectable()
 export class StoragesService {
@@ -54,6 +55,7 @@ export class StoragesService {
     id: string,
     userid: string,
   ): Promise<Nullable<Storage>> {
+    const questioner = await this.usersService.getById(userid);
     const storage = await this.storageModel.findById(id).lean();
 
     if (!storage) {
@@ -61,6 +63,7 @@ export class StoragesService {
     }
 
     if (
+      questioner.role !== "admin" &&
       storage.access !== "public" &&
       storage.owner.toString() !== userid &&
       !storage.members.some((member) => member.toString() === userid)
@@ -140,7 +143,12 @@ export class StoragesService {
     path: string,
   ): Promise<void> {
     const storage = await this.getStorageById(storageid);
+    const storageEntities = await this.getStorageEntities(storageid, "/");
     const newEntities: EntityDocument[] = [];
+    const totalEntitiesSize = entities.reduce(
+      (accumulator, entity) => accumulator + entity.size,
+      0,
+    );
 
     if (!storage) {
       throw new NotFoundException("Такого хранилища не существует");
@@ -150,25 +158,63 @@ export class StoragesService {
       throw new NotFoundException("Директории по такому пути не существует");
     }
 
+    if (
+      storage.restrict_files_count &&
+      storageEntities.length + entities.length > storage.max_files_count
+    ) {
+      throw new NotificationException(
+        {
+          status: "error",
+          config: {
+            message: `При записи файлов будет превышено максимальное количество файлов в хранилище (${storage.max_files_count} шт.)`,
+          },
+        },
+        400,
+      );
+    }
+
+    if (
+      storage.restrict_file_size &&
+      entities.some((entity) => entity.size > storage.max_file_size)
+    ) {
+      throw new NotificationException(
+        {
+          status: "error",
+          config: {
+            message: `Один из файлов превышает максимально допустимый размер в ${convertBytes(storage.max_file_size)}`,
+          },
+        },
+        400,
+      );
+    }
+
+    if (storage.used + totalEntitiesSize > storage.size) {
+      throw new NotificationException(
+        {
+          status: "error",
+          config: {
+            message: `При записи файлов будет превышен максимальный размер хранилища в ${convertBytes(storage.size)}`,
+          },
+        },
+        400,
+      );
+    }
+
     try {
-      for (const file of entities) {
-        const [name, extension] = file.originalname.split(/\.(?!.*\.)/);
+      for (const entity of entities) {
+        const [name, extension] = entity.originalname.split(/\.(?!.*\.)/);
         const newFilePath = p.join(
           this.root,
           storage.name,
           path,
-          file.originalname,
+          entity.originalname,
         );
-
-        if (file.size > storage.max_file_size) {
-          continue;
-        }
 
         if (!(await exists(newFilePath))) {
           newEntities.push(
             new this.entityModel({
               storage: storageid,
-              size: file.size,
+              size: entity.size,
               type: "file",
               extension,
               name,
@@ -176,7 +222,7 @@ export class StoragesService {
             }),
           );
         }
-        await fs.writeFile(newFilePath, file.buffer);
+        await fs.writeFile(newFilePath, entity.buffer);
       }
     } catch (error) {
       throw new InternalServerErrorException(
@@ -185,5 +231,8 @@ export class StoragesService {
     }
 
     await this.entityModel.bulkSave(newEntities);
+    await this.storageModel.findByIdAndUpdate(storage._id, {
+      used: storage.used + totalEntitiesSize,
+    });
   }
 }
