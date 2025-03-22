@@ -138,6 +138,7 @@ export class StoragesController {
         await this.storagesService.searchStorages({ name: name.trim() })
       ).map((storage) => ({
         value: storage.name,
+        _id: storage._id,
       })),
     };
 
