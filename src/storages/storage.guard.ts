@@ -51,7 +51,11 @@ export function StorageGuard(owned?: boolean) {
     }
 
     public validate(questioner: User, storage: Storage): boolean {
-      if (owned && storage.owner.toString() !== questioner._id.toString()) {
+      if (
+        owned &&
+        storage.owner.toString() !== questioner._id.toString() &&
+        questioner.role !== "admin"
+      ) {
         return false;
       }
 
