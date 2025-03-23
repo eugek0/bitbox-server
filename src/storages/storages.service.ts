@@ -153,11 +153,10 @@ export class StoragesService {
     return await this.entityModel.findById(id).lean();
   }
 
-  async getFileBufferById(id: string): Promise<string> {
+  async getFilePathById(id: string): Promise<string> {
     const entity = await this.getEntityById(id);
-    const storage = await this.getStorageById(entity.storage);
 
-    const path = p.join(this.root, storage.name, entity.fullname);
+    const path = p.join(this.root, entity.storage.toString(), entity.fullname);
 
     if (entity.type !== "file") {
       throw new BadRequestException("Данная сущность не является файлом");
@@ -187,7 +186,7 @@ export class StoragesService {
       throw new NotFoundException("Такого хранилища не существует");
     }
 
-    if (!(await exists(p.join(this.root, storage.name, path)))) {
+    if (!(await exists(p.join(this.root, storage._id.toString(), path)))) {
       throw new NotFoundException("Директории по такому пути не существует");
     }
 
@@ -238,7 +237,7 @@ export class StoragesService {
         const [name, extension] = entity.originalname.split(/\.(?!.*\.)/);
         const newFilePath = p.join(
           this.root,
-          storage.name,
+          storage._id.toString(),
           path,
           entity.originalname,
         );

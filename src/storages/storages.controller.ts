@@ -201,7 +201,7 @@ export class StoragesController {
     @Param("fileid") fileid: string,
     @Res() response: Response,
   ): Promise<void> {
-    const path = await this.storagesService.getFileBufferById(fileid);
+    const path = await this.storagesService.getFilePathById(fileid);
     response.sendFile(path, { dotfiles: "allow" });
   }
 
