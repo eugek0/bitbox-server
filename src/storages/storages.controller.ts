@@ -134,7 +134,7 @@ export class StoragesController {
       notification: {
         status: "success",
         config: {
-          message: `${dto.storages.length} ${getNoun(dto.storages.length, "хранилище", "хранилища", "хранилищ")} было успешно удалено!`,
+          message: `${dto.storages.length} ${getNoun(dto.storages.length, "хранилище", "хранилища", "хранилищ")} ${dto.storages.length > 1 ? "были" : "было"} успешно ${dto.storages.length > 1 ? "удалены" : "удалено"}!`,
         },
       },
     };
