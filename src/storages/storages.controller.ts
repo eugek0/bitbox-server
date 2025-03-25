@@ -29,6 +29,8 @@ import { UploadFilesDto } from "./dtos/uploadFiles.dto";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import { Entity } from "./schemas/entity.schema";
 import { StorageGuard } from "./storage.guard";
+import { DeleteStoragesDto } from "./dtos/deleteStorages.dto";
+import { getNoun } from "@/core/utils";
 
 @Controller("storages")
 export class StoragesController {
@@ -121,20 +123,18 @@ export class StoragesController {
   @ApiTags("Хранилища")
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Хранилище удалено.",
+    description: "Хранилища удалены.",
   })
-  @Delete(":storageid")
+  @Delete()
   @UseGuards(JwtGuard, StorageGuard(true))
-  async deleteStorage(
-    @Param("storageid") storageid: string,
-  ): Promise<INotification> {
-    await this.storagesService.deleteStorage(storageid);
+  async deleteStorages(@Body() dto: DeleteStoragesDto): Promise<INotification> {
+    await this.storagesService.deleteStorage(dto);
 
     return {
       notification: {
         status: "success",
         config: {
-          message: "Хранилище успешно удалено!",
+          message: `${dto.storages.length} ${getNoun(dto.storages.length, "хранилище", "хранилища", "хранилищ")} было успешно удалено!`,
         },
       },
     };

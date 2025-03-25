@@ -18,6 +18,7 @@ import { Nullable } from "@/core/types";
 import { Entity, EntityDocument } from "./schemas/entity.schema";
 import { convertBytes } from "@/core/utils";
 import { User } from "@/users/schemas/user.schema";
+import { DeleteStoragesDto } from "./dtos/deleteStorages.dto";
 
 @Injectable()
 export class StoragesService {
@@ -101,22 +102,24 @@ export class StoragesService {
     }
   }
 
-  async deleteStorage(storageid: string): Promise<void> {
+  async deleteStorage(dto: DeleteStoragesDto): Promise<void> {
     try {
-      const storage = await this.getStorageById(storageid);
+      for (const storageid of dto.storages) {
+        const storage = await this.getStorageById(storageid);
 
-      if (!storage) {
-        throw new NotFoundException("Такого хранилища не существует");
-      }
+        if (!storage) {
+          throw new NotFoundException("Такого хранилища не существует");
+        }
 
-      if (await exists(p.join(this.root, storage._id.toString()))) {
-        await fs.rm(p.join(this.root, storage._id.toString()), {
-          recursive: true,
-        });
-      } else {
-        throw new BadRequestException("Такого хранилища не существует");
+        if (await exists(p.join(this.root, storage._id.toString()))) {
+          await fs.rm(p.join(this.root, storage._id.toString()), {
+            recursive: true,
+          });
+        } else {
+          throw new BadRequestException("Такого хранилища не существует");
+        }
+        await this.storageModel.findByIdAndDelete(storageid);
       }
-      await this.storageModel.findByIdAndDelete(storageid);
     } catch (error) {
       if (!isHttpException(error)) {
         throw new InternalServerErrorException(

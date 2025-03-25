@@ -24,27 +24,30 @@ export function StorageGuard(owned?: boolean) {
     async canActivate(context: ExecutionContext): Promise<boolean> {
       const request = context.switchToHttp().getRequest() as Request;
 
+      const storages = request.body.storages ?? [request.params.storageid];
+
       const payload = this.jwtService.decode(
         request.cookies.access,
       ) as JwtPayload;
       const questioner = await this.usersService.getById(payload.sub);
-      const storage = await this.storagesService.getStorageById(
-        request.params.storageid,
-      );
-      const owner = await this.usersService.getById(storage.owner.toString());
 
-      if (!this.validate(questioner, storage)) {
-        throw new ForbiddenException({
-          message: "У вас нет доступа к этому хранилищу.",
-          contacts:
-            owner.prefered_contacts !== "none"
-              ? owner?.[owner?.prefered_contacts]
-              : undefined,
-          type:
-            owner.prefered_contacts !== "none"
-              ? owner?.prefered_contacts
-              : undefined,
-        });
+      for (const storageid of storages) {
+        const storage = await this.storagesService.getStorageById(storageid);
+        const owner = await this.usersService.getById(storage.owner.toString());
+
+        if (!this.validate(questioner, storage)) {
+          throw new ForbiddenException({
+            message: "У вас нет доступа к этому хранилищу.",
+            contacts:
+              owner.prefered_contacts !== "none"
+                ? owner?.[owner?.prefered_contacts]
+                : undefined,
+            type:
+              owner.prefered_contacts !== "none"
+                ? owner?.prefered_contacts
+                : undefined,
+          });
+        }
       }
 
       return true;
