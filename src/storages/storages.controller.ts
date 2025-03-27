@@ -190,6 +190,10 @@ export class StoragesController {
     @Param("storageid") storageid: string,
     @Query("path") path: string,
   ): Promise<Entity[]> {
+    const n = null;
+
+    n.a
+
     return await this.storagesService.getStorageEntities(storageid, path);
   }
 

@@ -31,13 +31,15 @@ export class LoggerFilter implements ExceptionFilter {
           {
             config: {
               message: "Ошибка",
-              description: `Произошла ошибка, пожалуйста оповестите нас о проблеме. Идентификатор ошибки: ${log._id}`,
+              description: `Произошла ошибка, пожалуйста оповестите нас о проблеме. Идентификатор ошибки: ${log._id}.`,
             },
             status: "error",
           },
           HttpStatus.INTERNAL_SERVER_ERROR,
         ).getResponse(),
       );
+
+      console.error(exception);
     } else {
       response.status(exception.getStatus());
       response.json(exception.getResponse());
