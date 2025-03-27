@@ -63,7 +63,10 @@ export class StoragesController {
       throw new NotificationException(
         {
           status: "error",
-          config: { message: "Такого хранилища не найдено." },
+          config: {
+            message: "Ошибка",
+            description: "Такого хранилища не найдено.",
+          },
         },
         404,
       );
@@ -90,7 +93,8 @@ export class StoragesController {
       notification: {
         status: "success",
         config: {
-          message: "Хранилище успешно создано!",
+          message: "Успех",
+          description: "Хранилище успешно создано!",
         },
       },
     };
@@ -114,7 +118,8 @@ export class StoragesController {
       notification: {
         status: "success",
         config: {
-          message: "Хранилище успешно изменено!",
+          message: "Успех",
+          description: "Хранилище успешно изменено!",
         },
       },
     };
@@ -134,7 +139,8 @@ export class StoragesController {
       notification: {
         status: "success",
         config: {
-          message: `${dto.storages.length} ${getNoun(dto.storages.length, "хранилище", "хранилища", "хранилищ")} ${dto.storages.length > 1 ? "были" : "было"} успешно ${dto.storages.length > 1 ? "удалены" : "удалено"}!`,
+          message: "Успех",
+          description: `${dto.storages.length} ${getNoun(dto.storages.length, "хранилище", "хранилища", "хранилищ")} ${dto.storages.length > 1 ? "были" : "было"} успешно ${dto.storages.length > 1 ? "удалены" : "удалено"}!`,
         },
       },
     };

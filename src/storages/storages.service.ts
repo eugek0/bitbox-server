@@ -201,7 +201,8 @@ export class StoragesService {
         {
           status: "error",
           config: {
-            message: `При записи файлов будет превышено максимальное количество файлов в хранилище (${storage.max_files_count} шт.)`,
+            message: "Ошибка",
+            description: `При записи файлов будет превышено максимальное количество файлов в хранилище (${storage.max_files_count} шт.)`,
           },
         },
         400,
@@ -216,7 +217,8 @@ export class StoragesService {
         {
           status: "error",
           config: {
-            message: `Один из файлов превышает максимально допустимый размер в ${convertBytes(storage.max_file_size)}`,
+            message: "Ошибка",
+            description: `Один из файлов превышает максимально допустимый размер в ${convertBytes(storage.max_file_size)}`,
           },
         },
         400,
@@ -228,7 +230,8 @@ export class StoragesService {
         {
           status: "error",
           config: {
-            message: `При записи файлов будет превышен максимальный размер хранилища в ${convertBytes(storage.size)}`,
+            message: "Ошибка",
+            description: `При записи файлов будет превышен максимальный размер хранилища в ${convertBytes(storage.size)}`,
           },
         },
         400,

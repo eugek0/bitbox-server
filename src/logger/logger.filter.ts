@@ -30,9 +30,8 @@ export class LoggerFilter implements ExceptionFilter {
         new NotificationException(
           {
             config: {
-              message:
-                "Произошла ошибка, пожалуйста оповестите нас о проблеме.",
-              description: `Идентификатор ошибки: ${log._id}`,
+              message: "Ошибка",
+              description: `Произошла ошибка, пожалуйста оповестите нас о проблеме. Идентификатор ошибки: ${log._id}`,
             },
             status: "error",
           },
