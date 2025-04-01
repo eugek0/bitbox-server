@@ -3,7 +3,7 @@ import { JwtService } from "@nestjs/jwt";
 import { UsersService, User } from "@/users";
 import { StoragesService } from "../storages.service";
 import { Storage } from "../schemas";
-import { StorageBaseGuard } from "./storageBase.guard";
+import { StorageBaseGuard } from "./base.guard";
 
 @Injectable()
 export class StorageMaintainerGuard extends StorageBaseGuard {

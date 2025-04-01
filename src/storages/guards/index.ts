@@ -1,2 +1,2 @@
-export * from "./storageWatcher.guard";
-export * from "./storageMaintainer.guard";
+export * from "./watcher.guard";
+export * from "./maintainer.guard";
