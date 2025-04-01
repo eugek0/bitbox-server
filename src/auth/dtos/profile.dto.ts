@@ -1,4 +1,4 @@
-import { Base64 } from "@/core/types";
+import { Base64 } from "@/core";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class ProfileDto {

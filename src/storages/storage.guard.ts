@@ -1,5 +1,4 @@
 import { JwtPayload } from "@/core/types/jwt.types";
-import { UsersService } from "@/users/users.service";
 import {
   CanActivate,
   ExecutionContext,
@@ -8,9 +7,9 @@ import {
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
+import { UsersService, User } from "@/users";
 import { StoragesService } from "./storages.service";
-import { User } from "@/users/schemas/user.schema";
-import { Storage } from "./schemas/storage.schema";
+import { Storage } from "./schemas";
 
 export function StorageGuard(owned?: boolean) {
   @Injectable()
@@ -32,7 +31,7 @@ export function StorageGuard(owned?: boolean) {
       const questioner = await this.usersService.getById(payload.sub);
 
       for (const storageid of storages) {
-        const storage = await this.storagesService.getStorageById(storageid);
+        const storage = await this.storagesService.getById(storageid);
         const owner = await this.usersService.getById(storage.owner.toString());
 
         if (!this.validate(questioner, storage)) {

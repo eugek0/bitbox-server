@@ -3,12 +3,11 @@ import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import * as cookieParser from "cookie-parser";
-import { IConfig } from "./configuration/types";
-import { APP_VERSION } from "./core/constants";
-import { LoggerFilter } from "./logger/logger.filter";
-import { LoggerService } from "./logger/logger.service";
-import { AppModule } from "./app/app.module";
-import { UsersService } from "./users/users.service";
+import { IConfig } from "./configuration";
+import { LoggerService, LoggerFilter } from "./logger";
+import { UsersService } from "./users";
+import { APP_VERSION } from "./core";
+import { AppModule } from "./app";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

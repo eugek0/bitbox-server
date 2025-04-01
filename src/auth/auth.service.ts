@@ -1,19 +1,15 @@
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
+import * as bcrypt from "bcryptjs";
 import { IConfig } from "@/configuration/types";
-import { FormException } from "@/core/classes";
-import { isHttpException } from "@/core/typeguards";
-import { User } from "@/users/schemas/user.schema";
-import { UsersService } from "@/users/users.service";
+import { UsersService, User } from "@/users";
 import {
   BadRequestException,
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from "bcryptjs";
-import { CreateUserDto } from "./dtos";
-import { LoginUserDto } from "./dtos";
-import { ProfileDto } from "./dtos";
+import { FormException, isHttpException } from "@/core";
+import { LoginUserDto, ProfileDto, RegisterUserDto } from "./dtos";
 import { ITokenPayload, ITokens } from "./types";
 
 @Injectable()
@@ -24,7 +20,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(dto: CreateUserDto): Promise<ITokens> {
+  async register(dto: RegisterUserDto): Promise<ITokens> {
     try {
       const user = await this.usersService.create(dto);
       return this.generateTokens(user);

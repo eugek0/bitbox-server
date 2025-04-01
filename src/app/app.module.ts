@@ -1,12 +1,11 @@
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Module } from "@nestjs/common";
-import { AuthModule } from "@/auth/auth.module";
-import configuration from "@/configuration";
-import { IConfig } from "@/configuration/types";
-import { StoragesModule } from "@/storages/storages.module";
-import { LoggerModule } from "@/logger/logger.module";
-import { UsersModule } from "@/users/users.module";
+import { configuration, IConfig } from "@/configuration";
+import { StoragesModule } from "@/storages";
+import { LoggerModule } from "@/logger";
+import { UsersModule } from "@/users";
+import { AuthModule } from "@/auth";
 import { AppService } from "./app.service";
 
 @Module({
@@ -22,8 +21,8 @@ import { AppService } from "./app.service";
         uri: configService.get<IConfig>("app").mongoUri,
       }),
     }),
-    UsersModule,
     AuthModule,
+    UsersModule,
     LoggerModule,
     StoragesModule,
   ],

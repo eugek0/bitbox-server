@@ -1,4 +1,4 @@
-import { INotification } from "@/core/types";
+import { INotification } from "@/core";
 import { HttpException, HttpExceptionOptions } from "@nestjs/common";
 
 export class NotificationException extends HttpException {

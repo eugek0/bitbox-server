@@ -8,29 +8,24 @@ import {
   Post,
   Put,
   Query,
-  Res,
-  UploadedFiles,
   UseGuards,
-  UseInterceptors,
   UsePipes,
 } from "@nestjs/common";
+import { DefaultOptionType } from "antd/es/select";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { StoragesService } from "./storages.service";
-import { JwtGuard } from "@/auth/jwt.guard";
-import { User } from "@/core/decorators";
-import { INotification, Nullable } from "@/core/types";
-import { DefaultOptionType } from "antd/es/select";
-import { Storage } from "./schemas/storage.schema";
-import { CreateEditStorageDto } from "./dtos";
-import { TrimStringsPipe } from "@/core/pipes";
-import { Response } from "express";
-import { NotificationException } from "@/core/classes";
-import { UploadFilesDto } from "./dtos/uploadFiles.dto";
-import { FilesInterceptor } from "@nestjs/platform-express";
-import { Entity } from "./schemas/entity.schema";
+import { JwtGuard } from "@/auth";
+import { Storage } from "./schemas";
+import { CreateStorageDto, DeleteStoragesDto } from "./dtos";
 import { StorageGuard } from "./storage.guard";
-import { DeleteStoragesDto } from "./dtos/deleteStorages.dto";
-import { getNoun } from "@/core/utils";
+import {
+  User,
+  INotification,
+  Nullable,
+  NotificationException,
+  TrimStringsPipe,
+  getNoun,
+} from "@/core";
 
 @Controller("storages")
 export class StoragesController {
@@ -44,7 +39,7 @@ export class StoragesController {
   @Get()
   @UseGuards(JwtGuard)
   async getAvailableStorages(@User() questioner: string): Promise<Storage[]> {
-    return await this.storagesService.getAvailableStorages(questioner);
+    return await this.storagesService.getAvailable(questioner);
   }
 
   @ApiTags("Хранилища")
@@ -57,7 +52,7 @@ export class StoragesController {
   async getStorageById(
     @Param("storageid") storageid: string,
   ): Promise<Nullable<Storage>> {
-    const storage = await this.storagesService.getStorageById(storageid);
+    const storage = await this.storagesService.getById(storageid);
 
     if (!storage) {
       throw new NotificationException(
@@ -84,10 +79,10 @@ export class StoragesController {
   @Post()
   @UseGuards(JwtGuard)
   async createStorage(
-    @Body() dto: CreateEditStorageDto,
+    @Body() dto: CreateStorageDto,
     @User() owner: string,
   ): Promise<INotification> {
-    await this.storagesService.createStorage(dto, owner);
+    await this.storagesService.create(dto, owner);
 
     return {
       notification: {
@@ -110,9 +105,9 @@ export class StoragesController {
   @UseGuards(JwtGuard, StorageGuard(true))
   async editStorage(
     @Param("storageid") storageid: string,
-    @Body() dto: CreateEditStorageDto,
+    @Body() dto: CreateStorageDto,
   ): Promise<INotification> {
-    await this.storagesService.editStorage(dto, storageid);
+    await this.storagesService.edit(dto, storageid);
 
     return {
       notification: {
@@ -133,7 +128,7 @@ export class StoragesController {
   @Delete()
   @UseGuards(JwtGuard, StorageGuard(true))
   async deleteStorages(@Body() dto: DeleteStoragesDto): Promise<INotification> {
-    await this.storagesService.deleteStorage(dto);
+    await this.storagesService.delete(dto);
 
     return {
       notification: {
@@ -164,7 +159,7 @@ export class StoragesController {
     const storages: DefaultOptionType = {
       label: "Хранилища",
       options: (
-        await this.storagesService.searchStorages(
+        await this.storagesService.search(
           {
             name: name.trim(),
           },
@@ -177,52 +172,5 @@ export class StoragesController {
     };
 
     return storages?.options?.length ? [storages] : [];
-  }
-
-  @ApiTags("Хранилища")
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: "Список сущностей хранилища.",
-  })
-  @Get(":storageid/entities")
-  @UseGuards(JwtGuard, StorageGuard())
-  async getStorageEntities(
-    @Param("storageid") storageid: string,
-    @Query("path") path: string,
-  ): Promise<Entity[]> {
-    return await this.storagesService.getStorageEntities(storageid, path);
-  }
-
-  @Get(":storageid/entity/:entityid")
-  @UseGuards(JwtGuard, StorageGuard())
-  async getEntityById(
-    @Param("entityid") entityid: string,
-  ): Promise<Nullable<Entity>> {
-    return await this.storagesService.getEntityById(entityid);
-  }
-
-  @Get(":storageid/file/:fileid")
-  @UseGuards(JwtGuard, StorageGuard())
-  async getFileById(
-    @Param("fileid") fileid: string,
-    @Res() response: Response,
-  ): Promise<void> {
-    const path = await this.storagesService.getFilePathById(fileid);
-    response.sendFile(path, { dotfiles: "allow" });
-  }
-
-  @ApiTags("Хранилища")
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-  })
-  @Post("upload/:storageid")
-  @UseInterceptors(FilesInterceptor("entities"))
-  @UseGuards(JwtGuard, StorageGuard())
-  async uploadFiles(
-    @Body() dto: UploadFilesDto,
-    @Param("storageid") storageid: string,
-    @UploadedFiles() entities: Express.Multer.File[],
-  ): Promise<void> {
-    await this.storagesService.uploadEntities(entities, storageid, dto.path);
   }
 }

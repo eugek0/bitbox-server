@@ -6,12 +6,12 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
-import { ApiResponse, ApiTags } from "@nestjs/swagger";
-import { JwtGuard } from "@/auth/jwt.guard";
-import { UsersService } from "./users.service";
-import { User } from "./schemas/user.schema";
 import { DefaultOptionType } from "antd/es/select";
-import { Nullable } from "@/core/types";
+import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { UsersService } from "./users.service";
+import { JwtGuard } from "@/auth/jwt.guard";
+import { Nullable } from "@/core";
+import { User } from "./schemas";
 
 @Controller("users")
 export class UsersController {

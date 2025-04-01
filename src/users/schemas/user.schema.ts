@@ -1,8 +1,7 @@
-import { Base64 } from "@/core/types";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument } from "mongoose";
-import { UserRole } from "../types/roles.types";
-import { ContactType } from "../types/contacts.types";
+import { UserRole, ContactType } from "../types";
+import { Base64 } from "@/core";
 
 export type UserDocument = HydratedDocument<User>;
 

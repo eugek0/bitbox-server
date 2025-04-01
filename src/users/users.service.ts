@@ -1,13 +1,13 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { User } from "./schemas/user.schema";
-import { CreateUserDto } from "@/auth/dtos";
 import * as generateAvatar from "github-like-avatar-generator";
 import * as moment from "moment";
 import * as bcrypt from "bcryptjs";
-import { GetUserDto } from "./dtos/getUser.dto";
-import { Nullable } from "@/core/types";
+import { User } from "./schemas";
+import { Nullable } from "@/core";
+import { RegisterUserDto } from "@/auth";
+import { GetUserDto } from "./dtos";
 
 @Injectable()
 export class UsersService {
@@ -56,7 +56,7 @@ export class UsersService {
     return await this.userModel.find({ role: "admin" }).lean().exec();
   }
 
-  async create(dto: CreateUserDto): Promise<Nullable<User>> {
+  async create(dto: RegisterUserDto): Promise<Nullable<User>> {
     if (await this.getByEmail(dto.email)) {
       throw new BadRequestException(
         "Пользователь с таким Email уже существует",

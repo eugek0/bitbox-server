@@ -5,10 +5,9 @@ import {
   HttpStatus,
   Injectable,
 } from "@nestjs/common";
-import { LoggerService } from "./logger.service";
-import { NotificationException } from "@/core/classes";
 import { Request, Response } from "express";
-import { isHttpException } from "@/core/typeguards";
+import { LoggerService } from "./logger.service";
+import { NotificationException, isHttpException } from "@/core";
 
 @Injectable()
 @Catch()

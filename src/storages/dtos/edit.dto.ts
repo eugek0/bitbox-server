@@ -2,25 +2,24 @@ import { ApiProperty } from "@nestjs/swagger";
 import {
   IsArray,
   IsBoolean,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   MaxLength,
 } from "class-validator";
-import { StorageAccess } from "../types/access.types";
+import { StorageAccess } from "../types";
 
-export class CreateEditStorageDto {
-  @IsNotEmpty()
+export class EditStorageDto {
+  @IsOptional()
   @IsString()
   @MaxLength(32)
   @ApiProperty({
     name: "name",
     description: "Название хранилища.",
     type: String,
-    required: true,
+    required: false,
   })
-  readonly name: string;
+  readonly name?: string;
 
   @IsOptional()
   @IsString()
@@ -33,25 +32,25 @@ export class CreateEditStorageDto {
   })
   readonly description?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   @ApiProperty({
     name: "size",
     description: "Размер хранилища.",
     type: String,
-    required: true,
+    required: false,
   })
-  readonly size: number;
+  readonly size?: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @ApiProperty({
     name: "access",
     description: "Режим доступа к хранилищу.",
     type: String,
-    required: true,
+    required: false,
   })
-  readonly access: StorageAccess;
+  readonly access?: StorageAccess;
 
   @IsOptional()
   @IsArray()
@@ -61,7 +60,7 @@ export class CreateEditStorageDto {
     type: [String],
     required: false,
   })
-  readonly members: string[];
+  readonly members?: string[];
 
   @IsOptional()
   @IsBoolean()
@@ -71,7 +70,7 @@ export class CreateEditStorageDto {
     type: Boolean,
     required: false,
   })
-  readonly restrict_file_size: boolean;
+  readonly restrict_file_size?: boolean;
 
   @IsOptional()
   @IsNumber()
@@ -81,7 +80,7 @@ export class CreateEditStorageDto {
     type: Number,
     required: false,
   })
-  readonly max_file_size: number;
+  readonly max_file_size?: number;
 
   @IsOptional()
   @IsBoolean()
@@ -91,7 +90,7 @@ export class CreateEditStorageDto {
     type: Boolean,
     required: false,
   })
-  readonly restrict_files_count: boolean;
+  readonly restrict_files_count?: boolean;
 
   @IsOptional()
   @IsNumber()
@@ -101,5 +100,15 @@ export class CreateEditStorageDto {
     type: Number,
     required: false,
   })
-  readonly max_files_count: number;
+  readonly max_files_count?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @ApiProperty({
+    name: "used",
+    description: "Использованное место в хранилище",
+    type: Number,
+    required: false,
+  })
+  readonly used?: number;
 }

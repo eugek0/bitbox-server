@@ -1,4 +1,4 @@
-import { UserRole } from "@/users/types/roles.types";
+import { UserRole } from "@/users";
 import { ApiProperty } from "@nestjs/swagger";
 import {
   IsEmail,
@@ -8,7 +8,7 @@ import {
   MinLength,
 } from "class-validator";
 
-export class CreateUserDto {
+export class RegisterUserDto {
   @IsNotEmpty()
   @IsString()
   @ApiProperty({

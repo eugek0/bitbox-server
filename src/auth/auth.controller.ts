@@ -13,9 +13,9 @@ import {
 import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
-import { CreateUserDto, LoginUserDto, ProfileDto } from "./dtos";
+import { TrimStringsPipe } from "@/core";
 import { JwtGuard } from "./jwt.guard";
-import { TrimStringsPipe } from "@/core/pipes";
+import { RegisterUserDto, LoginUserDto, ProfileDto } from "./dtos";
 
 @Controller("auth")
 export class AuthController {
@@ -38,12 +38,12 @@ export class AuthController {
   })
   @ApiBody({
     description: "Данные для регистрации пользователя.",
-    type: CreateUserDto,
+    type: RegisterUserDto,
   })
   @UsePipes(TrimStringsPipe)
   @Post("register")
   async register(
-    @Body() dto: CreateUserDto,
+    @Body() dto: RegisterUserDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
     const { access, refresh } = await this.authService.register(dto);

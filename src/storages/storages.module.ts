@@ -1,18 +1,14 @@
 import { Module } from "@nestjs/common";
+import { MongooseModule } from "@nestjs/mongoose";
+import { JwtModule } from "@nestjs/jwt";
 import { StoragesService } from "./storages.service";
 import { StoragesController } from "./storages.controller";
-import { MongooseModule } from "@nestjs/mongoose";
-import { Storage, StorageSchema } from "./schemas/storage.schema";
-import { UsersModule } from "@/users/users.module";
-import { Entity, EntitySchema } from "./schemas/entity.schema";
-import { JwtModule } from "@nestjs/jwt";
+import { Storage, StorageSchema } from "./schemas";
+import { UsersModule } from "@/users";
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { schema: StorageSchema, name: Storage.name },
-      { schema: EntitySchema, name: Entity.name },
-    ]),
+    MongooseModule.forFeature([{ schema: StorageSchema, name: Storage.name }]),
     UsersModule,
     JwtModule,
   ],
