@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { StorageBaseGuard } from "./storageBase.guard";
+import { JwtService } from "@nestjs/jwt";
 import { User, UsersService } from "@/users";
 import { Storage } from "../schemas";
-import { JwtService } from "@nestjs/jwt";
 import { StoragesService } from "../storages.service";
+import { StorageBaseGuard } from "./base.guard";
 
 @Injectable()
 export class StorageWatcherGuard extends StorageBaseGuard {
@@ -13,7 +13,7 @@ export class StorageWatcherGuard extends StorageBaseGuard {
       storage.access === "public" ||
       storage.owner.toString() === questioner._id.toString() ||
       storage.members.some(
-        (member) => member.toString() === questioner._id.toString(),
+        (member) => member._id.toString() === questioner._id.toString(),
       );
 
     super(jwt, users, storages, validate);

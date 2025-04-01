@@ -6,8 +6,11 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  ValidateNested,
 } from "class-validator";
 import { StorageAccess } from "../types";
+import { Type } from "class-transformer";
+import { StorageMemberDto } from "./member.dto";
 
 export class EditStorageDto {
   @IsOptional()
@@ -54,13 +57,15 @@ export class EditStorageDto {
 
   @IsOptional()
   @IsArray()
+  @ValidateNested()
+  @Type(() => StorageMemberDto)
   @ApiProperty({
     name: "members",
     description: "Пользователи, имеющие доступ к хранилищу в приватном режиме.",
-    type: [String],
+    type: [Object],
     required: false,
   })
-  readonly members?: string[];
+  readonly members?: StorageMemberDto[];
 
   @IsOptional()
   @IsBoolean()

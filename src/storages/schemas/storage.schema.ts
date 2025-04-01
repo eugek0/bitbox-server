@@ -1,9 +1,18 @@
 import { User } from "@/users/schemas/user.schema";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import mongoose, { HydratedDocument } from "mongoose";
-import { StorageAccess } from "../types";
+import mongoose, { Document, HydratedDocument } from "mongoose";
+import { StorageAccess, StorageMemberRole } from "../types";
 
 export type StorageDocument = HydratedDocument<Storage>;
+
+@Schema()
+class StorageMember extends Document {
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, unique: true })
+  _id: string;
+
+  @Prop()
+  role: StorageMemberRole;
+}
 
 @Schema()
 export class Storage {
@@ -27,8 +36,8 @@ export class Storage {
   @Prop()
   readonly access: StorageAccess;
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }] })
-  readonly members: User[];
+  @Prop({ type: [{ type: StorageMember }] })
+  readonly members: StorageMember[];
 
   @Prop()
   readonly restrict_file_size: boolean;

@@ -7,8 +7,11 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  ValidateNested,
 } from "class-validator";
 import { StorageAccess } from "../types";
+import { StorageMemberDto } from "./member.dto";
+import { Type } from "class-transformer";
 
 export class CreateStorageDto {
   @IsNotEmpty()
@@ -55,13 +58,15 @@ export class CreateStorageDto {
 
   @IsOptional()
   @IsArray()
+  @ValidateNested()
+  @Type(() => StorageMemberDto)
   @ApiProperty({
     name: "members",
     description: "Пользователи, имеющие доступ к хранилищу в приватном режиме.",
-    type: [String],
+    type: [Object],
     required: false,
   })
-  readonly members: string[];
+  readonly members?: StorageMemberDto[];
 
   @IsOptional()
   @IsBoolean()
@@ -71,7 +76,7 @@ export class CreateStorageDto {
     type: Boolean,
     required: false,
   })
-  readonly restrict_file_size: boolean;
+  readonly restrict_file_size?: boolean;
 
   @IsOptional()
   @IsNumber()
@@ -81,7 +86,7 @@ export class CreateStorageDto {
     type: Number,
     required: false,
   })
-  readonly max_file_size: number;
+  readonly max_file_size?: number;
 
   @IsOptional()
   @IsBoolean()
@@ -91,7 +96,7 @@ export class CreateStorageDto {
     type: Boolean,
     required: false,
   })
-  readonly restrict_files_count: boolean;
+  readonly restrict_files_count?: boolean;
 
   @IsOptional()
   @IsNumber()
@@ -101,5 +106,5 @@ export class CreateStorageDto {
     type: Number,
     required: false,
   })
-  readonly max_files_count: number;
+  readonly max_files_count?: number;
 }
