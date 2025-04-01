@@ -17,7 +17,6 @@ import { StoragesService } from "./storages.service";
 import { JwtGuard } from "@/auth";
 import { Storage } from "./schemas";
 import { CreateStorageDto, DeleteStoragesDto } from "./dtos";
-import { StorageGuard } from "./storage.guard";
 import {
   User,
   INotification,
@@ -26,6 +25,7 @@ import {
   TrimStringsPipe,
   getNoun,
 } from "@/core";
+import { StorageMaintainerGuard, StorageWatcherGuard } from "./guards";
 
 @Controller("storages")
 export class StoragesController {
@@ -48,7 +48,7 @@ export class StoragesController {
     description: "Получить информацию о хранилище.",
   })
   @Get(":storageid")
-  @UseGuards(JwtGuard, StorageGuard())
+  @UseGuards(JwtGuard, StorageWatcherGuard)
   async getStorageById(
     @Param("storageid") storageid: string,
   ): Promise<Nullable<Storage>> {
@@ -102,7 +102,7 @@ export class StoragesController {
   })
   @UsePipes(TrimStringsPipe)
   @Put(":storageid")
-  @UseGuards(JwtGuard, StorageGuard(true))
+  @UseGuards(JwtGuard, StorageMaintainerGuard)
   async editStorage(
     @Param("storageid") storageid: string,
     @Body() dto: CreateStorageDto,
@@ -126,7 +126,7 @@ export class StoragesController {
     description: "Хранилища удалены.",
   })
   @Delete()
-  @UseGuards(JwtGuard, StorageGuard(true))
+  @UseGuards(JwtGuard, StorageMaintainerGuard)
   async deleteStorages(@Body() dto: DeleteStoragesDto): Promise<INotification> {
     await this.storagesService.delete(dto);
 

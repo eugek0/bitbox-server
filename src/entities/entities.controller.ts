@@ -15,18 +15,18 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { JwtGuard } from "@/auth";
-import { StorageGuard } from "@/storages";
 import { EntitiesService } from "./entities.service";
 import { UploadEntitiesDto } from "./dtos";
 import { Entity } from "./schemas";
 import { Nullable } from "@/core";
+import { StorageMaintainerGuard, StorageWatcherGuard } from "@/storages";
 
 @Controller("entities")
 export class EntitiesController {
-  constructor(private entitiesService: EntitiesService) {}
+  constructor(private readonly entitiesService: EntitiesService) {}
 
-  @Get(":storageid/entity/:entityid")
-  @UseGuards(JwtGuard, StorageGuard())
+  @Get(":storageid/:entityid")
+  @UseGuards(JwtGuard, StorageWatcherGuard)
   async getById(
     @Param("entityid") entityid: string,
   ): Promise<Nullable<Entity>> {
@@ -39,7 +39,7 @@ export class EntitiesController {
     description: "Список сущностей хранилища.",
   })
   @Get(":storageid")
-  @UseGuards(JwtGuard, StorageGuard())
+  @UseGuards(JwtGuard, StorageWatcherGuard)
   async get(
     @Param("storageid") storageid: string,
     @Query("path") path: string,
@@ -48,7 +48,7 @@ export class EntitiesController {
   }
 
   @Get(":storageid/file/:fileid")
-  @UseGuards(JwtGuard, StorageGuard())
+  @UseGuards(JwtGuard, StorageWatcherGuard)
   async getPathById(
     @Param("fileid") fileid: string,
     @Res() response: Response,
@@ -61,9 +61,9 @@ export class EntitiesController {
   @ApiResponse({
     status: HttpStatus.CREATED,
   })
-  @Post("upload/:storageid")
+  @Post(":storageid")
   @UseInterceptors(FilesInterceptor("entities"))
-  @UseGuards(JwtGuard, StorageGuard())
+  @UseGuards(JwtGuard, StorageMaintainerGuard)
   async upload(
     @Body() dto: UploadEntitiesDto,
     @Param("storageid") storageid: string,

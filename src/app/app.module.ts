@@ -7,6 +7,7 @@ import { LoggerModule } from "@/logger";
 import { UsersModule } from "@/users";
 import { AuthModule } from "@/auth";
 import { AppService } from "./app.service";
+import { EntitiesModule } from "@/entities";
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AppService } from "./app.service";
     UsersModule,
     LoggerModule,
     StoragesModule,
+    EntitiesModule,
   ],
   providers: [AppService],
 })
