@@ -49,9 +49,13 @@ export class StoragesService {
       return this.storageModel.find().lean();
     }
 
-    return this.storageModel
+    return await this.storageModel
       .find({
-        $or: [{ access: "public" }, { owner: userid }, { members: userid }],
+        $or: [
+          { access: "public" },
+          { owner: userid },
+          { "members._id": userid },
+        ],
       })
       .lean();
   }

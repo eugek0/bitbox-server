@@ -6,6 +6,7 @@ import { StoragesController } from "./storages.controller";
 import { Storage, StorageSchema } from "./schemas";
 import { UsersModule } from "@/users";
 import { StorageMaintainerGuard, StorageWatcherGuard } from "./guards";
+import { StorageAdministratorGuard } from "./guards/administrator.guard";
 
 @Module({
   imports: [
@@ -14,7 +15,17 @@ import { StorageMaintainerGuard, StorageWatcherGuard } from "./guards";
     JwtModule,
   ],
   controllers: [StoragesController],
-  providers: [StoragesService, StorageWatcherGuard, StorageMaintainerGuard],
-  exports: [StoragesService, StorageWatcherGuard, StorageMaintainerGuard],
+  providers: [
+    StoragesService,
+    StorageWatcherGuard,
+    StorageMaintainerGuard,
+    StorageAdministratorGuard,
+  ],
+  exports: [
+    StoragesService,
+    StorageWatcherGuard,
+    StorageMaintainerGuard,
+    StorageAdministratorGuard,
+  ],
 })
 export class StoragesModule {}

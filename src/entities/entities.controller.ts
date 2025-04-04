@@ -1,4 +1,4 @@
-import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import { Response } from "express";
 import {
@@ -25,6 +25,11 @@ import { StorageMaintainerGuard, StorageWatcherGuard } from "@/storages";
 export class EntitiesController {
   constructor(private readonly entitiesService: EntitiesService) {}
 
+  @ApiTags("Сущности")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Одна сущность хранилища.",
+  })
   @Get(":storageid/:entityid")
   @UseGuards(JwtGuard, StorageWatcherGuard)
   async getById(
@@ -47,9 +52,14 @@ export class EntitiesController {
     return await this.entitiesService.get(storageid, path);
   }
 
-  @Get(":storageid/file/:fileid")
+  @ApiTags("Сущности")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Бинарник файла.",
+  })
+  @Get(":storageid/blob/:fileid")
   @UseGuards(JwtGuard, StorageWatcherGuard)
-  async getPathById(
+  async getBlob(
     @Param("fileid") fileid: string,
     @Res() response: Response,
   ): Promise<void> {
@@ -57,7 +67,7 @@ export class EntitiesController {
     response.sendFile(path, { dotfiles: "allow" });
   }
 
-  @ApiTags("Хранилища")
+  @ApiTags("Сущности")
   @ApiResponse({
     status: HttpStatus.CREATED,
   })

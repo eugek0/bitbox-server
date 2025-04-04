@@ -6,7 +6,7 @@ import { Storage } from "../schemas";
 import { StorageBaseGuard } from "./base.guard";
 
 @Injectable()
-export class StorageMaintainerGuard extends StorageBaseGuard {
+export class StorageAdministratorGuard extends StorageBaseGuard {
   constructor(jwt: JwtService, users: UsersService, storages: StoragesService) {
     const validate = (questioner: User, storage: Storage) =>
       questioner.role === "admin" ||
@@ -14,9 +14,7 @@ export class StorageMaintainerGuard extends StorageBaseGuard {
       storage.members.some(
         (member) =>
           member._id.toString() === questioner._id.toString() &&
-          (member.role === "maintainer" ||
-            member.role === "administrator" ||
-            storage.defaultRole === "maintainer" ||
+          (member.role === "administrator" ||
             storage.defaultRole === "administrator"),
       );
 

@@ -7,7 +7,7 @@ export type StorageDocument = HydratedDocument<Storage>;
 
 @Schema()
 class StorageMember extends Document {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, unique: true })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
   _id: string;
 
   @Prop()
@@ -40,16 +40,19 @@ export class Storage {
   readonly members: StorageMember[];
 
   @Prop()
-  readonly restrict_file_size: boolean;
+  readonly restrictFileSize: boolean;
 
   @Prop()
-  readonly max_file_size: number;
+  readonly maxFileSize: number;
 
   @Prop()
-  readonly restrict_files_count: boolean;
+  readonly restrictFilesCount: boolean;
 
   @Prop()
-  readonly max_files_count: number;
+  readonly maxFilesCount: number;
+
+  @Prop()
+  readonly defaultRole: StorageMemberRole;
 }
 
 export const StorageSchema = SchemaFactory.createForClass(Storage);

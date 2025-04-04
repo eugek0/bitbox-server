@@ -71,40 +71,40 @@ export class CreateStorageDto {
   @IsOptional()
   @IsBoolean()
   @ApiProperty({
-    name: "restrict_file_size",
+    name: "restrictFileSize",
     description: "Флаг ограничения максимального размера файла",
     type: Boolean,
     required: false,
   })
-  readonly restrict_file_size?: boolean;
+  readonly restrictFileSize?: boolean;
 
   @IsOptional()
   @IsNumber()
   @ApiProperty({
-    name: "max_file_size",
+    name: "maxFileSize",
     description: "Максимальный размер файла",
     type: Number,
     required: false,
   })
-  readonly max_file_size?: number;
+  readonly maxFileSize?: number;
 
   @IsOptional()
   @IsBoolean()
   @ApiProperty({
-    name: "restrict_files_count",
+    name: "restrictFilesCount",
     description: "Флаг ограничения максимального количества файлов",
     type: Boolean,
     required: false,
   })
-  readonly restrict_files_count?: boolean;
+  readonly restrictFilesCount?: boolean;
 
   @IsOptional()
   @IsNumber()
   @ApiProperty({
-    name: "max_files_count",
+    name: "maxFilesCount",
     description: "Максимальное количество файлов",
     type: Number,
     required: false,
   })
-  readonly max_files_count?: number;
+  readonly maxFilesCount?: number;
 }

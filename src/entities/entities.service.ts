@@ -70,15 +70,15 @@ export class EntitiesService {
     }
 
     if (
-      storage.restrict_files_count &&
-      storageEntities.length + entities.length > storage.max_files_count
+      storage.restrictFilesCount &&
+      storageEntities.length + entities.length > storage.maxFilesCount
     ) {
       throw new NotificationException(
         {
           status: "error",
           config: {
             message: "Ошибка",
-            description: `При записи файлов будет превышено максимальное количество файлов в хранилище (${storage.max_files_count} шт.)`,
+            description: `При записи файлов будет превышено максимальное количество файлов в хранилище (${storage.maxFilesCount} шт.)`,
           },
         },
         400,
@@ -86,15 +86,15 @@ export class EntitiesService {
     }
 
     if (
-      storage.restrict_file_size &&
-      entities.some((entity) => entity.size > storage.max_file_size)
+      storage.restrictFileSize &&
+      entities.some((entity) => entity.size > storage.maxFileSize)
     ) {
       throw new NotificationException(
         {
           status: "error",
           config: {
             message: "Ошибка",
-            description: `Один из файлов превышает максимально допустимый размер в ${convertBytes(storage.max_file_size)}`,
+            description: `Один из файлов превышает максимально допустимый размер в ${convertBytes(storage.maxFileSize)}`,
           },
         },
         400,

@@ -40,6 +40,18 @@ export class UsersController {
     return await this.usersService.get({ _id, email, login });
   }
 
+  @Get("/record")
+  @UseGuards(JwtGuard)
+  async getRecord(): Promise<Record<string, User>> {
+    const users = await this.usersService.getAllUsers({ password: false });
+
+    return Object.fromEntries(
+      Object.entries(Object.groupBy(users, (user) => user._id)).map(
+        ([key, [user]]) => [key, user],
+      ),
+    );
+  }
+
   @Get("/options")
   @UseGuards(JwtGuard)
   async getOptions(): Promise<DefaultOptionType[]> {

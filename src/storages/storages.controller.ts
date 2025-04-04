@@ -26,6 +26,7 @@ import {
   getNoun,
 } from "@/core";
 import { StorageMaintainerGuard, StorageWatcherGuard } from "./guards";
+import { StorageAdministratorGuard } from "./guards/administrator.guard";
 
 @Controller("storages")
 export class StoragesController {
@@ -102,7 +103,7 @@ export class StoragesController {
   })
   @UsePipes(TrimStringsPipe)
   @Put(":storageid")
-  @UseGuards(JwtGuard, StorageMaintainerGuard)
+  @UseGuards(JwtGuard, StorageAdministratorGuard)
   async editStorage(
     @Param("storageid") storageid: string,
     @Body() dto: CreateStorageDto,
@@ -126,7 +127,7 @@ export class StoragesController {
     description: "Хранилища удалены.",
   })
   @Delete()
-  @UseGuards(JwtGuard, StorageMaintainerGuard)
+  @UseGuards(JwtGuard, StorageAdministratorGuard)
   async deleteStorages(@Body() dto: DeleteStoragesDto): Promise<INotification> {
     await this.storagesService.delete(dto);
 
