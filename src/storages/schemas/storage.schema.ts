@@ -53,6 +53,9 @@ export class Storage {
 
   @Prop()
   readonly defaultRole: StorageMemberRole;
+
+  @Prop()
+  readonly createdAt: string;
 }
 
 export const StorageSchema = SchemaFactory.createForClass(Storage);

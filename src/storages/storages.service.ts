@@ -24,6 +24,7 @@ import {
   SearchStoragesDto,
 } from "./dtos";
 import { EntitiesService } from "@/entities";
+import * as moment from "moment";
 
 @Injectable()
 export class StoragesService {
@@ -70,7 +71,12 @@ export class StoragesService {
           "name",
         );
       }
-      const storage = new this.storageModel({ owner, used: 0, ...dto });
+      const storage = new this.storageModel({
+        owner,
+        used: 0,
+        createdAt: moment().toISOString(),
+        ...dto,
+      });
       await fs.mkdir(p.join(STORAGE_ROOT, storage._id.toString()), {
         recursive: true,
       });
