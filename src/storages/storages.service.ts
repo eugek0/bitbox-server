@@ -122,6 +122,7 @@ export class StoragesService {
           throw new BadRequestException("Такого хранилища не существует");
         }
         await this.storageModel.findByIdAndDelete(storageid);
+        await this.entitiesService.clearStorage(storageid);
       }
     } catch (error) {
       if (!isHttpException(error)) {

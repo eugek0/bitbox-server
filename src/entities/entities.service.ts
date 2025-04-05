@@ -156,4 +156,8 @@ export class EntitiesService {
       storage._id.toString(),
     );
   }
+
+  async clearStorage(storageid: string): Promise<void> {
+    await this.entityModel.deleteMany({ storage: storageid });
+  }
 }
