@@ -1,4 +1,6 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -21,6 +23,7 @@ import { StoragesService } from "@/storages";
 export class EntitiesService {
   constructor(
     @InjectModel(Entity.name) private readonly entityModel: Model<Entity>,
+    @Inject(forwardRef(() => StoragesService))
     private readonly storagesService: StoragesService,
   ) {}
 

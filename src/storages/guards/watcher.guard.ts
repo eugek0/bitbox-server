@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { User, UsersService } from "@/users";
 import { Storage } from "../schemas";
@@ -7,7 +7,11 @@ import { StorageBaseGuard } from "./base.guard";
 
 @Injectable()
 export class StorageWatcherGuard extends StorageBaseGuard {
-  constructor(jwt: JwtService, users: UsersService, storages: StoragesService) {
+  constructor(
+    jwt: JwtService,
+    users: UsersService,
+    @Inject(forwardRef(() => StoragesService)) storages: StoragesService,
+  ) {
     const validate = (questioner: User, storage: Storage): boolean => {
       const member = storage.members.find(
         (item) => questioner._id.toString() === item._id.toString(),

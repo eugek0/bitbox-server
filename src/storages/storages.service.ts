@@ -23,12 +23,14 @@ import {
   EditStorageDto,
   SearchStoragesDto,
 } from "./dtos";
+import { EntitiesService } from "@/entities";
 
 @Injectable()
 export class StoragesService {
   constructor(
     @InjectModel(Storage.name) private storageModel: Model<Storage>,
     private usersService: UsersService,
+    private entitiesService: EntitiesService,
   ) {}
   async get(): Promise<Storage[]> {
     return await this.storageModel.find().lean();

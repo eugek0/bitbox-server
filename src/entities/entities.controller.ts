@@ -1,4 +1,4 @@
-import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import { Response } from "express";
 import {
@@ -19,7 +19,7 @@ import { EntitiesService } from "./entities.service";
 import { UploadEntitiesDto } from "./dtos";
 import { Entity } from "./schemas";
 import { Nullable } from "@/core";
-import { StorageMaintainerGuard, StorageWatcherGuard } from "@/storages";
+import { StorageMaintainerGuard, StorageWatcherGuard } from "@/storages/guards";
 
 @Controller("entities")
 export class EntitiesController {
