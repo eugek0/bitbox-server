@@ -8,15 +8,20 @@ import { StorageBaseGuard } from "./base.guard";
 @Injectable()
 export class StorageAdministratorGuard extends StorageBaseGuard {
   constructor(jwt: JwtService, users: UsersService, storages: StoragesService) {
-    const validate = (questioner: User, storage: Storage) =>
-      questioner.role === "admin" ||
-      storage.owner.toString() === questioner._id.toString() ||
-      storage.members.some(
-        (member) =>
-          member._id.toString() === questioner._id.toString() &&
-          (member.role === "administrator" ||
-            storage.defaultRole === "administrator"),
+    const validate = (questioner: User, storage: Storage): boolean => {
+      const member = storage.members.find(
+        (item) => questioner._id.toString() === item._id.toString(),
       );
+
+      return (
+        questioner.role === "admin" ||
+        storage.owner.toString() === questioner._id.toString() ||
+        member?.role === "administrator" ||
+        (storage.defaultRole === "administrator" &&
+          member?.role !== "watcher" &&
+          member?.role !== "maintainer")
+      );
+    };
 
     super(jwt, users, storages, validate);
   }
