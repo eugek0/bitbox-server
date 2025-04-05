@@ -61,6 +61,7 @@ export class UsersController {
       value: user._id,
       label: user.login,
       avatar: user.avatar,
+      search: `${user.login} ${user.email}`,
     }));
   }
 }
