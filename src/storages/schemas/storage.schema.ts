@@ -7,7 +7,7 @@ export type StorageDocument = HydratedDocument<Storage>;
 
 @Schema()
 class StorageMember extends Document {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, unique: true })
   _id: string;
 
   @Prop()
