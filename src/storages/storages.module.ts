@@ -5,8 +5,11 @@ import { StoragesService } from "./storages.service";
 import { StoragesController } from "./storages.controller";
 import { Storage, StorageSchema } from "./schemas";
 import { UsersModule } from "@/users";
-import { StorageMaintainerGuard, StorageWatcherGuard } from "./guards";
-import { StorageAdministratorGuard } from "./guards/administrator.guard";
+import {
+  StorageMaintainerGuard,
+  StorageWatcherGuard,
+  StorageAdministratorGuard,
+} from "./guards";
 
 @Module({
   imports: [

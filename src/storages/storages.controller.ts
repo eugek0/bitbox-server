@@ -25,8 +25,7 @@ import {
   TrimStringsPipe,
   getNoun,
 } from "@/core";
-import { StorageMaintainerGuard, StorageWatcherGuard } from "./guards";
-import { StorageAdministratorGuard } from "./guards/administrator.guard";
+import { StorageAdministratorGuard, StorageWatcherGuard } from "./guards";
 
 @Controller("storages")
 export class StoragesController {
