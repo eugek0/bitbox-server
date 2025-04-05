@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  NotFoundException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
@@ -30,17 +31,22 @@ export class StorageBaseGuard implements CanActivate {
 
     for (const storageid of storages) {
       const storage = await this.storagesService.getById(storageid);
-      const owner = await this.usersService.getById(storage.owner.toString());
+
+      if (!storage) {
+        throw new NotFoundException("Такого хранилища не существует");
+      }
+
+      const owner = await this.usersService.getById(storage?.owner?.toString());
 
       if (!this.validate(questioner, storage)) {
         throw new ForbiddenException({
           message: "У вас нет доступа к этому хранилищу.",
           contacts:
-            owner.prefered_contacts !== "none"
+            owner?.prefered_contacts !== "none"
               ? owner?.[owner?.prefered_contacts]
               : undefined,
           type:
-            owner.prefered_contacts !== "none"
+            owner?.prefered_contacts !== "none"
               ? owner?.prefered_contacts
               : undefined,
         });
