@@ -4,6 +4,7 @@ import { Response } from "express";
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -16,10 +17,16 @@ import {
 } from "@nestjs/common";
 import { JwtGuard } from "@/auth";
 import { EntitiesService } from "./entities.service";
-import { UploadEntitiesDto } from "./dtos";
+import {
+  CreateDirectoryDto,
+  DeleteEntitiesDto,
+  UploadEntitiesDto,
+} from "./dtos";
 import { Entity } from "./schemas";
 import { Nullable } from "@/core";
 import { StorageMaintainerGuard, StorageWatcherGuard } from "@/storages/guards";
+import { GetEntitiesDto } from "./dtos/getEntities.dto";
+import { MetadataFilesInterceptor } from "@/core/interceptors";
 
 @Controller("entities")
 export class EntitiesController {
@@ -47,9 +54,15 @@ export class EntitiesController {
   @UseGuards(JwtGuard, StorageWatcherGuard)
   async get(
     @Param("storageid") storageid: string,
-    @Query("path") path: string,
-  ): Promise<Entity[]> {
-    return await this.entitiesService.get(storageid, path);
+    @Query("parent") parent: string,
+  ): Promise<GetEntitiesDto> {
+    const items = await this.entitiesService.get(storageid, parent);
+    const breadcrumbs = await this.entitiesService.getBreadcrumbs(parent);
+
+    return {
+      items,
+      breadcrumbs,
+    };
   }
 
   @ApiTags("Сущности")
@@ -72,13 +85,39 @@ export class EntitiesController {
     status: HttpStatus.CREATED,
   })
   @Post(":storageid")
-  @UseInterceptors(FilesInterceptor("entities"))
+  @UseInterceptors(FilesInterceptor("entities"), MetadataFilesInterceptor)
   @UseGuards(JwtGuard, StorageMaintainerGuard)
   async upload(
     @Body() dto: UploadEntitiesDto,
     @Param("storageid") storageid: string,
     @UploadedFiles() entities: Express.Multer.File[],
   ): Promise<void> {
-    await this.entitiesService.upload(entities, storageid, dto.path);
+    await this.entitiesService.upload(entities, storageid, dto);
+  }
+
+  @ApiTags("Сущности")
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+  })
+  @Post("mkdir/:storageid")
+  @UseGuards(JwtGuard, StorageMaintainerGuard)
+  async createDirectory(
+    @Body() dto: CreateDirectoryDto,
+    @Param("storageid") storageid: string,
+  ): Promise<void> {
+    await this.entitiesService.createDirectory(dto, storageid);
+  }
+
+  @ApiTags("Сущности")
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @Delete("rm/:storageid")
+  @UseGuards(JwtGuard, StorageMaintainerGuard)
+  async delete(
+    @Body() dto: DeleteEntitiesDto,
+    @Param("storageid") storageid: string,
+  ): Promise<void> {
+    await this.entitiesService.delete(dto, storageid);
   }
 }

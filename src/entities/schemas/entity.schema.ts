@@ -27,8 +27,11 @@ export class Entity {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Storage.name })
   readonly storage: string;
 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Entity.name })
+  readonly parent?: string;
+
   @Prop()
-  readonly path: string;
+  readonly createdAt: string;
 }
 
 export const EntitySchema = SchemaFactory.createForClass(Entity);

@@ -1,3 +1,3 @@
 export class UploadEntitiesDto {
-  readonly path: string;
+  readonly parent: string;
 }
