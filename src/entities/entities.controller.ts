@@ -1,6 +1,5 @@
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { FilesInterceptor } from "@nestjs/platform-express";
-import { Response } from "express";
 import {
   Body,
   Controller,
@@ -27,10 +26,31 @@ import { Nullable } from "@/core";
 import { StorageMaintainerGuard, StorageWatcherGuard } from "@/storages/guards";
 import { GetEntitiesDto } from "./dtos/getEntities.dto";
 import { MetadataFilesInterceptor } from "@/core/interceptors";
+import { DownloadEntitiesDto } from "./dtos/download.dto";
+import { Response } from "express";
 
 @Controller("entities")
 export class EntitiesController {
   constructor(private readonly entitiesService: EntitiesService) {}
+
+  @ApiTags("Сущности")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Бинарник файла.",
+  })
+  @Post("/blob/:storageid")
+  @UseGuards(JwtGuard, StorageWatcherGuard)
+  async getBlob(
+    @Res() response: Response,
+    @Param("storageid") storageid: string,
+    @Body() dto: DownloadEntitiesDto,
+  ): Promise<any> {
+    await this.entitiesService.downloadEntities(
+      dto.entities,
+      storageid,
+      response,
+    );
+  }
 
   @ApiTags("Сущности")
   @ApiResponse({
@@ -67,21 +87,6 @@ export class EntitiesController {
 
   @ApiTags("Сущности")
   @ApiResponse({
-    status: HttpStatus.OK,
-    description: "Бинарник файла.",
-  })
-  @Get(":storageid/blob/:fileid")
-  @UseGuards(JwtGuard, StorageWatcherGuard)
-  async getBlob(
-    @Param("fileid") fileid: string,
-    @Res() response: Response,
-  ): Promise<void> {
-    const path = await this.entitiesService.getPathById(fileid);
-    response.sendFile(path, { dotfiles: "allow" });
-  }
-
-  @ApiTags("Сущности")
-  @ApiResponse({
     status: HttpStatus.CREATED,
   })
   @Post(":storageid")
@@ -92,7 +97,7 @@ export class EntitiesController {
     @Param("storageid") storageid: string,
     @UploadedFiles() entities: Express.Multer.File[],
   ): Promise<void> {
-    await this.entitiesService.upload(entities, storageid, dto);
+    return await this.entitiesService.upload(entities, storageid, dto);
   }
 
   @ApiTags("Сущности")

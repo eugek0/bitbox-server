@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -11,13 +12,7 @@ import mongoose, { Model } from "mongoose";
 import * as p from "path";
 import * as fs from "fs/promises";
 import { Entity, EntityDocument } from "./schemas";
-import {
-  convertBytes,
-  exists,
-  NotificationException,
-  Nullable,
-  STORAGE_ROOT,
-} from "@/core";
+import { convertBytes, exists, Nullable, STORAGE_ROOT } from "@/core";
 import { Storage, StoragesService } from "@/storages";
 import {
   CreateDirectoryDto,
@@ -25,6 +20,9 @@ import {
   UploadEntitiesDto,
 } from "./dtos";
 import { IEntityBreadcrumb } from "./types";
+import * as archiver from "archiver";
+import { Archiver } from "archiver";
+import { Response } from "express";
 
 @Injectable()
 export class EntitiesService {
@@ -45,6 +43,34 @@ export class EntitiesService {
         parent: !parent || parent === "undefined" ? null : parent,
       })
       .lean();
+  }
+
+  async downloadEntities(
+    entities: string[],
+    storageid: string,
+    response: Response,
+  ): Promise<void> {
+    if (entities.length === 1) {
+      const entity = await this.getById(entities[0]);
+      if (!entity) {
+        throw new NotFoundException("Такой сущности не сущесвует");
+      }
+
+      if (entity.type === "file") {
+        const path = p.resolve(
+          STORAGE_ROOT,
+          storageid,
+          `${entity._id.toString()}${entity.extension ? `.${entity.extension}` : ""}`,
+        );
+        if (!(await exists(path))) {
+          throw new NotFoundException("Такого файла не существует");
+        }
+
+        return response.download(path, entity.fullname);
+      }
+    }
+
+    return this.createZipArchive(entities, response);
   }
 
   async getPathById(entityid: string): Promise<string | undefined> {
@@ -132,7 +158,6 @@ export class EntitiesService {
         await fs.writeFile(newFilePath, entity.buffer);
       }
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException(
         "Ошибка при записи файлов в хранилище",
       );
@@ -217,15 +242,8 @@ export class EntitiesService {
       storage.restrictFilesCount &&
       existingCount + newEntities.length > storage.maxFilesCount
     ) {
-      throw new NotificationException(
-        {
-          status: "error",
-          config: {
-            message: "Ошибка",
-            description: `При записи файлов будет превышено максимальное количество файлов в хранилище (${storage.maxFilesCount} шт.)`,
-          },
-        },
-        400,
+      throw new BadRequestException(
+        `При записи файлов будет превышено максимальное количество файлов в хранилище (${storage.maxFilesCount} шт.)`,
       );
     }
 
@@ -233,28 +251,14 @@ export class EntitiesService {
       storage.restrictFileSize &&
       newEntities.some((file) => file.size > storage.maxFileSize)
     ) {
-      throw new NotificationException(
-        {
-          status: "error",
-          config: {
-            message: "Ошибка",
-            description: `Один из файлов превышает максимально допустимый размер в ${convertBytes(storage.maxFileSize)}`,
-          },
-        },
-        400,
+      throw new BadRequestException(
+        `Один из файлов превышает максимально допустимый размер в ${convertBytes(storage.maxFileSize)}`,
       );
     }
 
     if (storage.used + newSize > storage.size) {
-      throw new NotificationException(
-        {
-          status: "error",
-          config: {
-            message: "Ошибка",
-            description: `При записи файлов будет превышен максимальный размер хранилища в ${convertBytes(storage.size)}`,
-          },
-        },
-        400,
+      throw new BadRequestException(
+        `При записи файлов будет превышен максимальный размер хранилища в ${convertBytes(storage.size)}`,
       );
     }
   }
@@ -336,5 +340,49 @@ export class EntitiesService {
     await this.entityModel.deleteOne({ _id: entity._id });
 
     return totalFreedSize;
+  }
+
+  private async createZipArchive(entityIds: string[], res: Response) {
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader("Content-Disposition", "attachment; filename=download.zip");
+
+    const archive = archiver("zip", {
+      zlib: { level: 9 },
+    });
+
+    archive.on("error", () => {
+      throw new InternalServerErrorException("Ошибка при создании архива");
+    });
+
+    archive.pipe(res);
+
+    const addEntityToArchive = async (entity: Entity, basePath: string) => {
+      if (entity.type === "file") {
+        const path = p.join(
+          STORAGE_ROOT,
+          entity.storage.toString(),
+          `${entity._id.toString()}${entity.extension ? `.${entity.extension}` : ""}`,
+        );
+        if (await exists(path)) {
+          archive.file(path, { name: p.join(basePath, entity.fullname) });
+        }
+      } else if (entity.type === "directory") {
+        const children = await this.entityModel
+          .find({ parent: entity._id })
+          .exec();
+        for (const child of children) {
+          await addEntityToArchive(child, p.join(basePath, entity.name));
+        }
+      }
+    };
+
+    for (const id of entityIds) {
+      const entity = await this.getById(id);
+      if (entity) {
+        await addEntityToArchive(entity, "");
+      }
+    }
+
+    await archive.finalize();
   }
 }
