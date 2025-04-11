@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   forwardRef,
+  HttpCode,
+  HttpStatus,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -12,7 +14,13 @@ import mongoose, { Model } from "mongoose";
 import * as p from "path";
 import * as fs from "fs/promises";
 import { Entity, EntityDocument } from "./schemas";
-import { convertBytes, exists, Nullable, STORAGE_ROOT } from "@/core";
+import {
+  convertBytes,
+  exists,
+  NotificationException,
+  Nullable,
+  STORAGE_ROOT,
+} from "@/core";
 import { Storage, StoragesService } from "@/storages";
 import {
   CreateDirectoryDto,
@@ -401,11 +409,26 @@ export class EntitiesService {
   async paste(dto: PasteEntityDto, storageid: string) {
     const { type, entities, target } = dto;
 
-    const allEntities = await this.getEntitiesWithChildren(entities);
+    if (entities.some((entity) => entity === target) && type === "cut") {
+      throw new NotificationException(
+        {
+          status: "error",
+          config: {
+            message: "Ошибка",
+            description: "Нельзя поместить директорию саму в себя",
+          },
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
     if (type === "copy") {
+      const allEntities = await this.getEntitiesWithChildren(entities);
       await this.handleCopy(allEntities, target, storageid);
     } else {
+      const allEntities = await this.entityModel.find({
+        _id: { $in: entities },
+      });
       await this.handleCut(allEntities, target);
     }
   }
