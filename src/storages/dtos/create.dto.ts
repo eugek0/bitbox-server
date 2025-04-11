@@ -23,7 +23,7 @@ export class CreateStorageDto {
     type: String,
     required: true,
   })
-  readonly name: string;
+  name: string;
 
   @IsOptional()
   @IsString()
@@ -34,7 +34,7 @@ export class CreateStorageDto {
     required: false,
     type: String,
   })
-  readonly description?: string;
+  description?: string;
 
   @IsNotEmpty()
   @IsNumber()
@@ -44,7 +44,7 @@ export class CreateStorageDto {
     type: String,
     required: true,
   })
-  readonly size: number;
+  size: number;
 
   @IsNotEmpty()
   @IsString()
@@ -54,7 +54,7 @@ export class CreateStorageDto {
     type: String,
     required: true,
   })
-  readonly access: StorageAccess;
+  access: StorageAccess;
 
   @IsOptional()
   @IsArray()
@@ -66,7 +66,7 @@ export class CreateStorageDto {
     type: [Object],
     required: false,
   })
-  readonly members?: StorageMemberDto[];
+  members?: StorageMemberDto[];
 
   @IsOptional()
   @IsBoolean()
@@ -76,7 +76,7 @@ export class CreateStorageDto {
     type: Boolean,
     required: false,
   })
-  readonly restrictFileSize?: boolean;
+  restrictFileSize?: boolean;
 
   @IsOptional()
   @IsNumber()
@@ -86,7 +86,7 @@ export class CreateStorageDto {
     type: Number,
     required: false,
   })
-  readonly maxFileSize?: number;
+  maxFileSize?: number;
 
   @IsOptional()
   @IsBoolean()
@@ -96,7 +96,7 @@ export class CreateStorageDto {
     type: Boolean,
     required: false,
   })
-  readonly restrictFilesCount?: boolean;
+  restrictFilesCount?: boolean;
 
   @IsOptional()
   @IsNumber()
@@ -106,5 +106,5 @@ export class CreateStorageDto {
     type: Number,
     required: false,
   })
-  readonly maxFilesCount?: number;
+  maxFilesCount?: number;
 }

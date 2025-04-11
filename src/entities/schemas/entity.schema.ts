@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument } from "mongoose";
 import { Storage } from "@/storages/schemas";
 import { EntityType } from "../types";
+import { User } from "@/core";
 
 export type EntityDocument = HydratedDocument<Entity>;
 
@@ -10,28 +11,31 @@ export class Entity {
   _id: string;
 
   @Prop()
-  readonly name: string;
+  name: string;
 
   @Prop()
-  readonly extension: string;
+  extension: string;
 
   @Prop()
-  readonly fullname: string;
+  fullname: string;
 
   @Prop()
-  readonly type: EntityType;
+  type: EntityType;
 
   @Prop()
-  readonly size: number;
+  size: number;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Storage.name })
-  readonly storage: string;
+  storage: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Entity.name })
-  readonly parent?: string;
+  parent?: string;
 
   @Prop()
-  readonly createdAt: string;
+  uploadedAt: string;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+  uploader: string;
 }
 
 export const EntitySchema = SchemaFactory.createForClass(Entity);

@@ -21,8 +21,8 @@ import {
 } from "./dtos";
 import { IEntityBreadcrumb } from "./types";
 import * as archiver from "archiver";
-import { Archiver } from "archiver";
 import { Response } from "express";
+import { PasteEntityDto } from "./dtos";
 
 @Injectable()
 export class EntitiesService {
@@ -93,7 +93,9 @@ export class EntitiesService {
     entities: Express.Multer.File[],
     storageid: string,
     dto: UploadEntitiesDto,
+    uploader: string,
   ): Promise<void> {
+    const uploadedAt = moment().toISOString();
     const storage = await this.storagesService.getById(storageid);
     const storageEntities = await this.get(storageid, dto.parent);
     const newEntities: EntityDocument[] = [];
@@ -127,6 +129,8 @@ export class EntitiesService {
           parentid = await this.createPathTreeAndReturnParentId(
             paths,
             storageid,
+            uploadedAt,
+            uploader,
             dto.parent,
           );
         }
@@ -140,6 +144,7 @@ export class EntitiesService {
         );
 
         if (!(await exists(newFilePath))) {
+          console.log(uploader);
           newEntities.push(
             new this.entityModel({
               _id: entityuuid,
@@ -150,6 +155,8 @@ export class EntitiesService {
               type: "file",
               storage: storageid,
               parent: !parentid || parentid === "undefined" ? null : parentid,
+              uploadedAt,
+              uploader,
             }),
           );
         }
@@ -179,6 +186,7 @@ export class EntitiesService {
   async createDirectory(
     dto: CreateDirectoryDto,
     storageid: string,
+    uploader: string,
   ): Promise<void> {
     try {
       const directory = new this.entityModel({
@@ -187,8 +195,9 @@ export class EntitiesService {
         storage: storageid,
         parent: dto.parent,
         type: "directory",
+        uploadedAt: moment().toISOString(),
+        uploader,
         size: 0,
-        createdAt: moment().toISOString(),
       });
 
       await directory.save();
@@ -224,7 +233,7 @@ export class EntitiesService {
     let current = await this.entityModel.findById(entityid).lean().exec();
 
     while (current) {
-      breadcrumbs.unshift({ _id: current._id, fullname: current.fullname }); // Добавляем в начало (от корня к текущему)
+      breadcrumbs.unshift({ _id: current._id, fullname: current.fullname });
       if (!current.parent) break;
       current = await this.entityModel.findById(current.parent).exec();
     }
@@ -266,38 +275,42 @@ export class EntitiesService {
   private async createPathTreeAndReturnParentId(
     pathParts: string[],
     storageId: string,
+    uploadedAt: string,
+    uploader: string,
     rootParent?: string,
   ): Promise<string> {
-    let parentId =
+    let parentid =
       !rootParent || rootParent === "undefined" ? null : rootParent;
 
     for (const folder of pathParts) {
       const existing = await this.entityModel.findOne({
         name: folder,
-        parent: parentId,
+        parent: parentid,
         storage: storageId,
         type: "directory",
       });
 
       if (existing) {
-        parentId = existing._id.toString();
+        parentid = existing._id.toString();
         continue;
       }
 
       const created = await this.entityModel.create({
         name: folder,
         fullname: folder,
-        extension: "",
         type: "directory",
-        size: 0,
         storage: storageId,
-        parent: parentId,
+        parent: parentid,
+        extension: "",
+        uploadedAt,
+        uploader,
+        size: 0,
       });
 
-      parentId = created._id.toString();
+      parentid = created._id.toString();
     }
 
-    return parentId;
+    return parentid;
   }
 
   private async deleteEntityRecursive(
@@ -384,5 +397,84 @@ export class EntitiesService {
     }
 
     await archive.finalize();
+  }
+
+  async paste(dto: PasteEntityDto, storageid: string) {
+    const { type, entities, target } = dto;
+
+    const allEntities = await this.getEntitiesWithChildren(entities);
+
+    if (type === "copy") {
+      await this.handleCopy(allEntities, target, storageid);
+    } else {
+      await this.handleCut(allEntities, target);
+    }
+  }
+
+  private async handleCopy(
+    entities: EntityDocument[],
+    newParentId: string,
+    storageid: string,
+  ) {
+    const idMap = new Map<string, string>();
+
+    for (const entity of entities) {
+      const newId = new mongoose.Types.ObjectId().toString();
+      idMap.set(entity._id.toString(), newId);
+
+      const newEntity = new this.entityModel({
+        ...entity.toObject(),
+        _id: newId,
+        parent: entity.parent
+          ? (idMap.get(entity.parent.toString()) ?? newParentId)
+          : newParentId,
+        storage: storageid,
+        createdAt: moment().toISOString(),
+      });
+
+      await newEntity.save();
+
+      if (entity.type === "file") {
+        await fs.copyFile(
+          p.join(
+            STORAGE_ROOT,
+            storageid,
+            `${entity._id.toString()}${entity.extension ? `.${entity.extension}` : ""}`,
+          ),
+          p.join(
+            STORAGE_ROOT,
+            storageid,
+            `${newId}${newEntity.extension ? `.${newEntity.extension}` : ""}`,
+          ),
+        );
+      }
+    }
+  }
+
+  private async handleCut(entities: EntityDocument[], newParentId: string) {
+    for (const entity of entities) {
+      entity.parent = newParentId;
+      await entity.save();
+    }
+  }
+
+  private async getEntitiesWithChildren(
+    ids: string[],
+  ): Promise<EntityDocument[]> {
+    const result: EntityDocument[] = [];
+    const queue = [...ids];
+
+    while (queue.length > 0) {
+      const id = queue.pop();
+      const entity = await this.entityModel.findById(id);
+      if (!entity) continue;
+
+      result.push(entity);
+
+      const children = await this.entityModel.find({ parent: id });
+      queue.push(...children.map((c) => c._id.toString()));
+    }
+
+    return result;
   }
 }

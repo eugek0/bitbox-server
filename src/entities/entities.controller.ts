@@ -22,12 +22,13 @@ import {
   UploadEntitiesDto,
 } from "./dtos";
 import { Entity } from "./schemas";
-import { Nullable } from "@/core";
+import { Nullable, User } from "@/core";
 import { StorageMaintainerGuard, StorageWatcherGuard } from "@/storages/guards";
 import { GetEntitiesDto } from "./dtos/getEntities.dto";
 import { MetadataFilesInterceptor } from "@/core/interceptors";
 import { DownloadEntitiesDto } from "./dtos/download.dto";
 import { Response } from "express";
+import { PasteEntityDto } from "./dtos";
 
 @Controller("entities")
 export class EntitiesController {
@@ -96,8 +97,14 @@ export class EntitiesController {
     @Body() dto: UploadEntitiesDto,
     @Param("storageid") storageid: string,
     @UploadedFiles() entities: Express.Multer.File[],
+    @User() uploader: string,
   ): Promise<void> {
-    return await this.entitiesService.upload(entities, storageid, dto);
+    return await this.entitiesService.upload(
+      entities,
+      storageid,
+      dto,
+      uploader,
+    );
   }
 
   @ApiTags("Сущности")
@@ -109,8 +116,9 @@ export class EntitiesController {
   async createDirectory(
     @Body() dto: CreateDirectoryDto,
     @Param("storageid") storageid: string,
+    @User() uploader: string,
   ): Promise<void> {
-    await this.entitiesService.createDirectory(dto, storageid);
+    await this.entitiesService.createDirectory(dto, storageid, uploader);
   }
 
   @ApiTags("Сущности")
@@ -124,5 +132,18 @@ export class EntitiesController {
     @Param("storageid") storageid: string,
   ): Promise<void> {
     await this.entitiesService.delete(dto, storageid);
+  }
+
+  @ApiTags("Сущности")
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @Post("paste/:storageid")
+  @UseGuards(JwtGuard, StorageMaintainerGuard)
+  async paste(
+    @Body() dto: PasteEntityDto,
+    @Param("storageid") storageid: string,
+  ): Promise<void> {
+    await this.entitiesService.paste(dto, storageid);
   }
 }
