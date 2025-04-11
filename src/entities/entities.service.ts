@@ -140,11 +140,10 @@ export class EntitiesService {
         const newFilePath = p.join(
           STORAGE_ROOT,
           storage._id.toString(),
-          `${entityuuid.toString()}.${extension}`,
+          `${entityuuid.toString()}${extension ? `.${extension}` : ""}`,
         );
 
         if (!(await exists(newFilePath))) {
-          console.log(uploader);
           newEntities.push(
             new this.entityModel({
               _id: entityuuid,
@@ -327,7 +326,7 @@ export class EntitiesService {
     const entityPath = p.join(
       STORAGE_ROOT,
       entity.storage.toString(),
-      `${entity._id.toString()}.${entity.extension}`,
+      `${entity._id.toString()}${entity.extension ? `.${entity.extension}` : ""}`,
     );
     let totalFreedSize = 0;
 
