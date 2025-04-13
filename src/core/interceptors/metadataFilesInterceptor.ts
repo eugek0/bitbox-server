@@ -14,6 +14,7 @@ export class MetadataFilesInterceptor implements NestInterceptor {
 
     if (Array.isArray(request.files)) {
       request.files.forEach((file, index) => {
+        file.temp = file.path;
         file.path = request.body?.metadata?.[index];
         file.originalname = Buffer.from(file.originalname, "latin1").toString(
           "utf8",

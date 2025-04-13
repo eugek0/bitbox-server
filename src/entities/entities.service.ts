@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   forwardRef,
-  HttpCode,
   HttpStatus,
   Inject,
   Injectable,
@@ -12,7 +11,8 @@ import * as moment from "moment";
 import { InjectModel } from "@nestjs/mongoose";
 import mongoose, { Model } from "mongoose";
 import * as p from "path";
-import * as fs from "fs/promises";
+import * as fsp from "fs/promises";
+import * as fs from "fs";
 import { Entity, EntityDocument } from "./schemas";
 import {
   convertBytes,
@@ -31,6 +31,7 @@ import { IEntityBreadcrumb } from "./types";
 import * as archiver from "archiver";
 import { Response } from "express";
 import { PasteEntityDto } from "./dtos";
+import { RenameEntityDto } from "./dtos/rename.dto";
 
 @Injectable()
 export class EntitiesService {
@@ -64,6 +65,11 @@ export class EntitiesService {
         throw new NotFoundException("Такой сущности не сущесвует");
       }
 
+      response.setHeader("Content-Type", "application/octet-stream");
+      response.setHeader("Content-Disposition", 'attachment; filename="file"');
+      response.setHeader("Transfer-Encoding", "chunked");
+      response.setHeader("Content-Length", entity.size);
+
       if (entity.type === "file") {
         const path = p.resolve(
           STORAGE_ROOT,
@@ -74,7 +80,9 @@ export class EntitiesService {
           throw new NotFoundException("Такого файла не существует");
         }
 
-        return response.download(path, entity.fullname);
+        const stream = fs.createReadStream(path);
+        stream.pipe(response);
+        return;
       }
     }
 
@@ -119,12 +127,7 @@ export class EntitiesService {
       throw new NotFoundException("Такого хранилища не существует");
     }
 
-    this.validateStorageLimits(
-      storage,
-      storageEntities.length,
-      entities,
-      totalEntitiesSize,
-    );
+    this.validateStorageLimits(storage, storageEntities.length, entities);
 
     try {
       for (const entity of entities) {
@@ -142,6 +145,8 @@ export class EntitiesService {
             dto.parent,
           );
         }
+
+        await this.updateFolderSizes(parentid, entity.size);
 
         const entityuuid = new mongoose.Types.ObjectId();
 
@@ -168,8 +173,8 @@ export class EntitiesService {
           );
         }
 
-        await fs.mkdir(p.dirname(newFilePath), { recursive: true });
-        await fs.writeFile(newFilePath, entity.buffer);
+        await fsp.mkdir(p.dirname(newFilePath), { recursive: true });
+        await fsp.rename(entity.temp, newFilePath);
       }
     } catch (error) {
       throw new InternalServerErrorException(
@@ -251,12 +256,16 @@ export class EntitiesService {
   private validateStorageLimits(
     storage: Storage,
     existingCount: number,
-    newEntities: Express.Multer.File[],
-    newSize: number,
+    entities: Express.Multer.File[],
   ): void {
+    const newSize = entities.reduce(
+      (accumulator, entity) => accumulator + entity.size,
+      0,
+    );
+
     if (
       storage.restrictFilesCount &&
-      existingCount + newEntities.length > storage.maxFilesCount
+      existingCount + entities.length > storage.maxFilesCount
     ) {
       throw new BadRequestException(
         `При записи файлов будет превышено максимальное количество файлов в хранилище (${storage.maxFilesCount} шт.)`,
@@ -265,7 +274,7 @@ export class EntitiesService {
 
     if (
       storage.restrictFileSize &&
-      newEntities.some((file) => file.size > storage.maxFileSize)
+      entities.some((file) => file.size > storage.maxFileSize)
     ) {
       throw new BadRequestException(
         `Один из файлов превышает максимально допустимый размер в ${convertBytes(storage.maxFileSize)}`,
@@ -323,6 +332,7 @@ export class EntitiesService {
   private async deleteEntityRecursive(
     entityid: string,
     storageid: string,
+    totalFreedSize = 0,
   ): Promise<number> {
     const entity = await this.entityModel.findOne({
       _id: entityid,
@@ -336,24 +346,28 @@ export class EntitiesService {
       entity.storage.toString(),
       `${entity._id.toString()}${entity.extension ? `.${entity.extension}` : ""}`,
     );
-    let totalFreedSize = 0;
 
     if (entity.type === "directory") {
       const children = await this.entityModel.find({ parent: entity._id });
 
       for (const child of children) {
-        await this.deleteEntityRecursive(child._id.toString(), storageid);
+        totalFreedSize = await this.deleteEntityRecursive(
+          child._id.toString(),
+          storageid,
+          totalFreedSize,
+        );
       }
 
       if (await exists(entityPath)) {
-        await fs.rmdir(entityPath).catch(() => null);
+        await fsp.rmdir(entityPath).catch(() => null);
       }
     }
 
     if (entity.type === "file") {
       if (await exists(entityPath)) {
-        await fs.unlink(entityPath).catch(() => null);
-        totalFreedSize += entity.size || 0;
+        await fsp.unlink(entityPath).catch(() => null);
+        await this.updateFolderSizes(entity.parent, -entity.size);
+        totalFreedSize += entity.size;
       }
     }
 
@@ -362,10 +376,7 @@ export class EntitiesService {
     return totalFreedSize;
   }
 
-  private async createZipArchive(entityIds: string[], res: Response) {
-    res.setHeader("Content-Type", "application/zip");
-    res.setHeader("Content-Disposition", "attachment; filename=download.zip");
-
+  private async createZipArchive(entityIds: string[], response: Response) {
     const archive = archiver("zip", {
       zlib: { level: 9 },
     });
@@ -374,7 +385,7 @@ export class EntitiesService {
       throw new InternalServerErrorException("Ошибка при создании архива");
     });
 
-    archive.pipe(res);
+    archive.pipe(response);
 
     const addEntityToArchive = async (entity: Entity, basePath: string) => {
       if (entity.type === "file") {
@@ -421,35 +432,52 @@ export class EntitiesService {
         HttpStatus.BAD_REQUEST,
       );
     }
+    const sourceEntities = await this.entityModel.find({
+      _id: { $in: entities },
+    });
+    const entitiesWithChildren = await this.getEntitiesWithChildren(entities);
 
     if (type === "copy") {
-      const allEntities = await this.getEntitiesWithChildren(entities);
-      await this.handleCopy(allEntities, target, storageid);
+      await this.handleCopy(
+        entitiesWithChildren,
+        sourceEntities,
+        target,
+        storageid,
+      );
     } else {
-      const allEntities = await this.entityModel.find({
-        _id: { $in: entities },
-      });
-      await this.handleCut(allEntities, target);
+      await this.handleCut(sourceEntities, target);
     }
+  }
+
+  async rename(dto: RenameEntityDto, storageid: string): Promise<void> {
+    await this.entityModel.findOneAndUpdate(
+      { _id: dto.entity, storage: storageid },
+      {
+        fullname: dto.fullname,
+      },
+    );
   }
 
   private async handleCopy(
     entities: EntityDocument[],
+    sourceEntities: EntityDocument[],
     newParentId: string,
     storageid: string,
   ) {
     const idMap = new Map<string, string>();
+    let totalSize = 0;
 
     for (const entity of entities) {
       const newId = new mongoose.Types.ObjectId().toString();
       idMap.set(entity._id.toString(), newId);
+      const newParent = entity.parent
+        ? (idMap.get(entity.parent.toString()) ?? newParentId)
+        : newParentId;
 
       const newEntity = new this.entityModel({
         ...entity.toObject(),
         _id: newId,
-        parent: entity.parent
-          ? (idMap.get(entity.parent.toString()) ?? newParentId)
-          : newParentId,
+        parent: newParent,
         storage: storageid,
         createdAt: moment().toISOString(),
       });
@@ -457,7 +485,8 @@ export class EntitiesService {
       await newEntity.save();
 
       if (entity.type === "file") {
-        await fs.copyFile(
+        totalSize += entity.size;
+        await fsp.copyFile(
           p.join(
             STORAGE_ROOT,
             storageid,
@@ -471,10 +500,24 @@ export class EntitiesService {
         );
       }
     }
+
+    for (const entity of sourceEntities) {
+      await this.updateFolderSizes(newParentId, entity.size);
+    }
+
+    const storage = await this.storagesService.getById(storageid);
+    await this.storagesService.edit(
+      {
+        used: storage.used + totalSize,
+      },
+      storageid,
+    );
   }
 
   private async handleCut(entities: EntityDocument[], newParentId: string) {
     for (const entity of entities) {
+      this.updateFolderSizes(entity.parent, -entity.size);
+      this.updateFolderSizes(newParentId, entity.size);
       entity.parent = newParentId;
       await entity.save();
     }
@@ -498,5 +541,23 @@ export class EntitiesService {
     }
 
     return result;
+  }
+
+  private async updateFolderSizes(
+    parentid: Nullable<string>,
+    deltaSize: number,
+  ): Promise<void> {
+    let currentFolder = await this.entityModel.findById(
+      !parentid || parentid === "undefined" ? null : parentid,
+    );
+
+    while (currentFolder) {
+      currentFolder.size = (currentFolder.size ?? 0) + deltaSize;
+      await currentFolder.save();
+
+      if (!currentFolder.parent) break;
+
+      currentFolder = await this.entityModel.findById(currentFolder.parent);
+    }
   }
 }

@@ -8,6 +8,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   Res,
   UploadedFiles,
@@ -29,6 +30,7 @@ import { MetadataFilesInterceptor } from "@/core/interceptors";
 import { DownloadEntitiesDto } from "./dtos/download.dto";
 import { Response } from "express";
 import { PasteEntityDto } from "./dtos";
+import { RenameEntityDto } from "./dtos/rename.dto";
 
 @Controller("entities")
 export class EntitiesController {
@@ -145,5 +147,18 @@ export class EntitiesController {
     @Param("storageid") storageid: string,
   ): Promise<void> {
     await this.entitiesService.paste(dto, storageid);
+  }
+
+  @ApiTags("Сущности")
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @Put("rename/:storageid")
+  @UseGuards(JwtGuard, StorageMaintainerGuard)
+  async rename(
+    @Body() dto: RenameEntityDto,
+    @Param("storageid") storageid: string,
+  ): Promise<void> {
+    await this.entitiesService.rename(dto, storageid);
   }
 }
