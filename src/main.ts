@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import * as cookieParser from "cookie-parser";
+import * as fsp from "fs/promises";
 import { IConfig } from "./configuration";
 import { LoggerService, LoggerFilter } from "./logger";
 import { UsersService } from "./users";
@@ -53,6 +54,9 @@ async function bootstrap() {
       role: "admin",
     });
   }
+
+  await fsp.mkdir("temp", { recursive: true });
+  await fsp.mkdir("storages", { recursive: true });
 
   const document = SwaggerModule.createDocument(app, documentConfig);
   SwaggerModule.setup("api", app, document);
