@@ -6,6 +6,9 @@ services:
     ports:
       - "5000:5000"
     env_file: .env.production
+    volumes:
+      - /etc/bitbox/storages:/app/storages
+      - /etc/bitbox/temp:/app/temp
 
   mongodb:
     image: mongo

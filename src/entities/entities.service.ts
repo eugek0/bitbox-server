@@ -174,9 +174,11 @@ export class EntitiesService {
         }
 
         await fsp.mkdir(p.dirname(newFilePath), { recursive: true });
-        await fsp.rename(entity.temp, newFilePath);
+        await fsp.cp(entity.temp, newFilePath);
+        await fsp.unlink(entity.temp);
       }
     } catch (error) {
+      console.error(error);
       throw new InternalServerErrorException(
         "Ошибка при записи файлов в хранилище",
       );

@@ -7,6 +7,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -153,7 +154,7 @@ export class EntitiesController {
   @ApiResponse({
     status: HttpStatus.OK,
   })
-  @Put("rename/:storageid")
+  @Patch("rename/:storageid")
   @UseGuards(JwtGuard, StorageMaintainerGuard)
   async rename(
     @Body() dto: RenameEntityDto,
