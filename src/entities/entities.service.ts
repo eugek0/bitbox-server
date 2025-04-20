@@ -420,9 +420,9 @@ export class EntitiesService {
   }
 
   async paste(dto: PasteEntityDto, storageid: string) {
-    const { type, entities, target } = dto;
+    const { type, entities, parent } = dto;
 
-    if (entities.some((entity) => entity === target) && type === "cut") {
+    if (entities.some((entity) => entity === parent) && type === "cut") {
       throw new NotificationException(
         {
           status: "error",
@@ -443,11 +443,11 @@ export class EntitiesService {
       await this.handleCopy(
         entitiesWithChildren,
         sourceEntities,
-        target,
+        parent,
         storageid,
       );
     } else {
-      await this.handleCut(sourceEntities, target);
+      await this.handleCut(sourceEntities, parent, storageid);
     }
   }
 
@@ -491,7 +491,7 @@ export class EntitiesService {
         await fsp.copyFile(
           p.join(
             STORAGE_ROOT,
-            storageid,
+            entity.storage.toString(),
             `${entity._id.toString()}${entity.extension ? `.${entity.extension}` : ""}`,
           ),
           p.join(
@@ -516,11 +516,24 @@ export class EntitiesService {
     );
   }
 
-  private async handleCut(entities: EntityDocument[], newParentId: string) {
+  private async handleCut(
+    entities: EntityDocument[],
+    newParentId: string,
+    storageid: string,
+  ) {
     for (const entity of entities) {
       this.updateFolderSizes(entity.parent, -entity.size);
       this.updateFolderSizes(newParentId, entity.size);
+      await this.storagesService.edit(
+        { $inc: { used: -entity.size } },
+        entity.storage,
+      );
+      await this.storagesService.edit(
+        { $inc: { used: entity.size } },
+        storageid,
+      );
       entity.parent = newParentId;
+      entity.storage = storageid;
       await entity.save();
     }
   }

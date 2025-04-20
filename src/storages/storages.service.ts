@@ -93,7 +93,7 @@ export class StoragesService {
     }
   }
 
-  async edit(dto: EditStorageDto, storageid: string): Promise<void> {
+  async edit(dto: any, storageid: string): Promise<void> {
     try {
       if (!(await this.getById(storageid))) {
         throw new NotFoundException("Такого хранилища не существует");

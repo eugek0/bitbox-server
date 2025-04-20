@@ -17,5 +17,5 @@ export class PasteEntityDto {
 
   @IsMongoId()
   @IsOptional()
-  readonly target: string;
+  readonly parent: string;
 }
