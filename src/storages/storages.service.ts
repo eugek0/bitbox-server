@@ -150,7 +150,13 @@ export class StoragesService {
     const filter = Object.fromEntries(
       Object.entries(dto)
         .filter(([_, value]) => value)
-        .map(([key, value]) => [key, { $regex: value, $options: "i" }]),
+        .map(([key, value]) => [
+          key,
+          {
+            $regex: String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+            $options: "i",
+          },
+        ]),
     );
 
     const storages = await this.storageModel.find(filter).lean().exec();
