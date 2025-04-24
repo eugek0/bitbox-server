@@ -26,10 +26,14 @@ import {
   getNoun,
 } from "@/core";
 import { StorageAdministratorGuard, StorageWatcherGuard } from "./guards";
+import { EntitiesService } from "@/entities";
 
 @Controller("storages")
 export class StoragesController {
-  constructor(private storagesService: StoragesService) {}
+  constructor(
+    private readonly storagesService: StoragesService,
+    private readonly entitiesService: EntitiesService,
+  ) {}
 
   @ApiTags("Хранилища")
   @ApiResponse({
@@ -166,11 +170,32 @@ export class StoragesController {
           questioner,
         )
       ).map((storage) => ({
-        value: storage.name,
-        _id: storage._id,
+        label: storage.name,
+        value: storage._id,
+        type: "storage",
       })),
     };
 
-    return storages?.options?.length ? [storages] : [];
+    const entities = {
+      label: "Сущности",
+      options: (
+        await this.entitiesService.search(
+          {
+            fullname: name.trim(),
+          },
+          questioner,
+        )
+      ).map((entity) => ({
+        storage: entity.storage.toString(),
+        extension: entity.extension,
+        label: entity.fullname,
+        value: entity._id,
+        type: entity.type,
+      })),
+    };
+
+    return Object.values({ storages, entities }).filter(
+      (group) => group.options.length,
+    );
   }
 }

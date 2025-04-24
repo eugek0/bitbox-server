@@ -164,6 +164,13 @@ export class StoragesService {
     return storages.filter((storage) => this.checkAccess(questioner, storage));
   }
 
+  async getStoragesByIds(storageids: string[]) {
+    return this.storageModel
+      .find({ _id: { $in: storageids } })
+      .lean()
+      .exec();
+  }
+
   private checkAccess(questioner: User, storage: Storage) {
     const result =
       questioner.role === "admin" ||

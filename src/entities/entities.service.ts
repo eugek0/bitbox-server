@@ -32,6 +32,8 @@ import * as archiver from "archiver";
 import { Response } from "express";
 import { PasteEntityDto } from "./dtos";
 import { RenameEntityDto } from "./dtos/rename.dto";
+import { SearchEntitiesDto } from "./dtos/search.dto";
+import { User, UsersService } from "@/users";
 
 @Injectable()
 export class EntitiesService {
@@ -39,6 +41,7 @@ export class EntitiesService {
     @InjectModel(Entity.name) private readonly entityModel: Model<Entity>,
     @Inject(forwardRef(() => StoragesService))
     private readonly storagesService: StoragesService,
+    private readonly usersService: UsersService,
   ) {}
 
   async getById(entityid: string): Promise<Nullable<Entity>> {
@@ -574,5 +577,50 @@ export class EntitiesService {
 
       currentFolder = await this.entityModel.findById(currentFolder.parent);
     }
+  }
+
+  async search(
+    dto: SearchEntitiesDto,
+    questionerid: string,
+  ): Promise<Entity[]> {
+    const questioner = await this.usersService.getById(questionerid);
+
+    const filter = Object.fromEntries(
+      Object.entries(dto)
+        .filter(([_, value]) => value)
+        .map(([key, value]) => [
+          key,
+          {
+            $regex: String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+            $options: "i",
+          },
+        ]),
+    );
+
+    const entities = await this.entityModel.find(filter).lean().exec();
+    const storageids = [...new Set(entities.map((entity) => entity._id))];
+    const storagesArr = await this.storagesService.getStoragesByIds(storageids);
+    const storages = Object.fromEntries(
+      Object.entries(
+        Object.groupBy(storagesArr, (storage) => storage._id.toString()),
+      ).map(([key, [storage]]) => [key, storage]),
+    );
+
+    console.log(storagesArr);
+
+    return entities.filter((entity) =>
+      this.checkAccess(questioner, storages[entity._id.toString()]),
+    );
+  }
+
+  private checkAccess(questioner: User, storage: Storage) {
+    const result =
+      questioner.role === "admin" ||
+      storage?.access === "public" ||
+      storage?.owner.toString() === questioner._id.toString() ||
+      storage?.members.some(
+        (member) => member.toString() === questioner._id.toString(),
+      );
+    return result;
   }
 }
