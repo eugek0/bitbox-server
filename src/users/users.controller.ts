@@ -1,8 +1,11 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   HttpStatus,
+  Param,
+  Patch,
   Query,
   UseGuards,
 } from "@nestjs/common";
@@ -12,6 +15,7 @@ import { UsersService } from "./users.service";
 import { JwtGuard } from "@/auth/jwt.guard";
 import { Nullable } from "@/core";
 import { User } from "./schemas";
+import { EditUserDto } from "./dtos/edit.dto";
 
 @Controller("users")
 export class UsersController {
@@ -28,7 +32,7 @@ export class UsersController {
   })
   @Get()
   @UseGuards(JwtGuard)
-  async getUser(
+  async get(
     @Query("_id") _id: string,
     @Query("email") email: string,
     @Query("login") login: string,
@@ -38,6 +42,20 @@ export class UsersController {
     }
 
     return await this.usersService.get({ _id, email, login });
+  }
+
+  @ApiTags("Пользователи")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Пользователь успешно изменен.",
+  })
+  @Patch(":userid")
+  @UseGuards(JwtGuard)
+  async edit(
+    @Param("userid") userid: string,
+    @Body() dto: EditUserDto,
+  ): Promise<void> {
+    await this.usersService.edit(userid, dto);
   }
 
   @Get("/record")

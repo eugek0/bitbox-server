@@ -8,6 +8,7 @@ import { User } from "./schemas";
 import { Nullable } from "@/core";
 import { RegisterUserDto } from "@/auth";
 import { GetUserDto } from "./dtos";
+import { EditUserDto } from "./dtos/edit.dto";
 
 @Injectable()
 export class UsersService {
@@ -83,5 +84,9 @@ export class UsersService {
       role: dto.role ?? "user",
     });
     return await user.save();
+  }
+
+  async edit(userid: string, dto: EditUserDto) {
+    await this.userModel.findByIdAndUpdate(userid, dto);
   }
 }
