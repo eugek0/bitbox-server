@@ -5,10 +5,11 @@ import * as generateAvatar from "github-like-avatar-generator";
 import * as moment from "moment";
 import * as bcrypt from "bcryptjs";
 import { User } from "./schemas";
-import { Nullable } from "@/core";
+import { FormException, Nullable } from "@/core";
 import { RegisterUserDto } from "@/auth";
 import { GetUserDto } from "./dtos";
 import { EditUserDto } from "./dtos/edit.dto";
+import { ChangePasswordDto } from "./dtos/changePassword.dto";
 
 @Injectable()
 export class UsersService {
@@ -88,5 +89,16 @@ export class UsersService {
 
   async edit(userid: string, dto: EditUserDto) {
     await this.userModel.findByIdAndUpdate(userid, dto);
+  }
+
+  async changePassword(userid: string, dto: ChangePasswordDto): Promise<void> {
+    const user = await this.userModel.findById(userid).exec();
+    const password = await bcrypt.hash(dto.newPassword, await bcrypt.genSalt());
+
+    if (!(await bcrypt.compare(dto.oldPassword, user.password))) {
+      throw new FormException("Неправильный пароль", "oldPassword");
+    }
+
+    await this.userModel.findByIdAndUpdate(userid, { password });
   }
 }

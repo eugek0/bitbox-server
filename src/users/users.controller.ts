@@ -13,9 +13,10 @@ import { DefaultOptionType } from "antd/es/select";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { UsersService } from "./users.service";
 import { JwtGuard } from "@/auth/jwt.guard";
-import { Nullable } from "@/core";
+import { INotification, Nullable } from "@/core";
 import { User } from "./schemas";
 import { EditUserDto } from "./dtos/edit.dto";
+import { ChangePasswordDto } from "./dtos/changePassword.dto";
 
 @Controller("users")
 export class UsersController {
@@ -54,8 +55,42 @@ export class UsersController {
   async edit(
     @Param("userid") userid: string,
     @Body() dto: EditUserDto,
-  ): Promise<void> {
+  ): Promise<INotification> {
     await this.usersService.edit(userid, dto);
+
+    return {
+      notification: {
+        status: "success",
+        config: {
+          message: "Успех",
+          description: "Профиль успешно отредактирован",
+        },
+      },
+    };
+  }
+
+  @ApiTags("Пользователи")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Пароль успешно изменен.",
+  })
+  @Patch("password/:userid")
+  @UseGuards(JwtGuard)
+  async changePassword(
+    @Param("userid") userid: string,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<INotification> {
+    await this.usersService.changePassword(userid, dto);
+
+    return {
+      notification: {
+        status: "success",
+        config: {
+          message: "Успех",
+          description: "Пароль успешно изменен",
+        },
+      },
+    };
   }
 
   @Get("/record")
