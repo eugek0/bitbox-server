@@ -13,6 +13,12 @@ export class User {
   readonly login: string;
 
   @Prop()
+  readonly name: string;
+
+  @Prop()
+  readonly lastname: string;
+
+  @Prop()
   readonly email: string;
 
   @Prop()

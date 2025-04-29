@@ -9,6 +9,14 @@ export class EditUserDto {
 
   @IsOptional()
   @IsString()
+  readonly name?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly lastname?: string;
+
+  @IsOptional()
+  @IsString()
   readonly telegram?: string;
 
   @IsOptional()
