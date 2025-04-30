@@ -13,7 +13,7 @@ import { DefaultOptionType } from "antd/es/select";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { UsersService } from "./users.service";
 import { JwtGuard } from "@/auth/jwt.guard";
-import { INotification, Nullable } from "@/core";
+import { FormException, INotification, Nullable } from "@/core";
 import { User } from "./schemas";
 import { EditUserDto } from "./dtos/edit.dto";
 import { ChangePasswordDto } from "./dtos/changePassword.dto";
@@ -56,6 +56,18 @@ export class UsersController {
     @Param("userid") userid: string,
     @Body() dto: EditUserDto,
   ): Promise<INotification> {
+    const user = await this.usersService.getById(userid);
+
+    if (
+      user.login !== dto.login &&
+      (await this.usersService.getByLogin(dto.login))
+    ) {
+      throw new FormException(
+        "Пользователь с таким логином уже существует",
+        "login",
+      );
+    }
+
     await this.usersService.edit(userid, dto);
 
     return {
