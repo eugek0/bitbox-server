@@ -606,8 +606,6 @@ export class EntitiesService {
       ).map(([key, [storage]]) => [key, storage]),
     );
 
-    console.log(storagesArr);
-
     return entities.filter((entity) =>
       this.checkAccess(questioner, storages[entity._id.toString()]),
     );

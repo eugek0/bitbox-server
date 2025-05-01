@@ -1,9 +1,14 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpStatus,
+  Param,
+  Patch,
   Post,
+  Query,
   Req,
   Res,
   UnauthorizedException,
@@ -13,13 +18,32 @@ import {
 import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
-import { TrimStringsPipe } from "@/core";
+import {
+  FormException,
+  INotification,
+  NotificationException,
+  TrimStringsPipe,
+} from "@/core";
 import { JwtGuard } from "./jwt.guard";
 import { RegisterUserDto, LoginUserDto, ProfileDto } from "./dtos";
+import { MailerService } from "@nestjs-modules/mailer";
+import { ConfigService } from "@nestjs/config";
+import { IConfig } from "@/configuration";
+import { getRecoverHTML } from "./utils";
+import { UsersService } from "@/users";
+import * as bcrypt from "bcryptjs";
+import { RecoverPasswordDto } from "./dtos/recover.dto";
+import * as moment from "moment";
+import { deserializeUser } from "passport";
 
 @Controller("auth")
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private mailerService: MailerService,
+    private configService: ConfigService,
+    private usersService: UsersService,
+  ) {}
 
   @ApiTags("Профиль")
   @ApiResponse({
@@ -167,5 +191,66 @@ export class AuthController {
   @Get("profile")
   async profile(@Req() request: Request): Promise<ProfileDto> {
     return await this.authService.profile(request.user as string);
+  }
+
+  @ApiTags("Профиль")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Отправлено письмо для восстановления пароля.",
+  })
+  @Get("send_recovery_letter")
+  async sendRecoveryLetter(@Query("email") email: string): Promise<void> {
+    const { mailerUser, frontendUrl } = this.configService.get<IConfig>("app");
+
+    const user = await this.usersService.getByEmail(email);
+
+    if (!user) {
+      return;
+    }
+
+    const token = await this.authService.generateRecoverToken(email);
+
+    const href = `${frontendUrl}/auth/recover/${user._id.toString()}?token=${token}`;
+
+    await this.mailerService.sendMail({
+      to: email,
+      from: mailerUser,
+      subject: "Восстановление пароля",
+      html: getRecoverHTML(href, user.name ?? user.login),
+    });
+  }
+
+  @ApiTags("Профиль")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Пароль восстановлен.",
+  })
+  @Patch("recover/:userid")
+  async recover(
+    @Param("userid") userid: string,
+    @Query("token") token: string,
+    @Body() { password }: RecoverPasswordDto,
+  ): Promise<INotification> {
+    const user = await this.usersService.getById(userid);
+
+    if (!bcrypt.compare(token, user.recoveryToken)) {
+      throw new ForbiddenException("Неверный токен восстановления");
+    }
+
+    if (moment().isAfter(moment(user.recoveryTokenDeath))) {
+      throw new BadRequestException("Истек срок жизни токена восстановления");
+    }
+
+    await this.usersService.recoverPassword(userid, password);
+
+    return {
+      notification: {
+        status: "success",
+        config: {
+          message: "Успех",
+          description: "Пароль успешно изменен",
+        },
+      },
+    };
   }
 }

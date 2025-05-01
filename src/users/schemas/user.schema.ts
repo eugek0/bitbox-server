@@ -25,6 +25,12 @@ export class User {
   readonly password: string;
 
   @Prop()
+  readonly recoveryToken: string;
+
+  @Prop()
+  readonly recoveryTokenDeath: string;
+
+  @Prop()
   readonly createdAt: string;
 
   @Prop()

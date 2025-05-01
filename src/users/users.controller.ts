@@ -68,7 +68,7 @@ export class UsersController {
       );
     }
 
-    await this.usersService.edit(userid, dto);
+    await this.usersService.editById(userid, dto);
 
     return {
       notification: {

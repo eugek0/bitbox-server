@@ -72,6 +72,23 @@ export class AuthService {
     return profile;
   }
 
+  async generateRecoverToken(email: string): Promise<string> {
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let token = "";
+    for (let i = 0; i < 8; i++) {
+      token += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    const salt = await bcrypt.genSalt();
+    const hash = await bcrypt.hash(token, salt);
+
+    const { _id } = await this.usersService.getByEmail(email);
+    await this.usersService.setRecoveryToken(_id.toString(), hash);
+
+    return token;
+  }
+
   // INFO: Приватные методы
 
   private async validate(dto: LoginUserDto): Promise<User> {
@@ -83,7 +100,6 @@ export class AuthService {
         "email",
       );
     }
-
     if (!(await bcrypt.compare(dto.password, user.password))) {
       throw new FormException("Неправильный пароль", "password");
     }

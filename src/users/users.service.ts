@@ -87,8 +87,19 @@ export class UsersService {
     return await user.save();
   }
 
-  async edit(userid: string, dto: EditUserDto) {
+  async editById(userid: string, dto: EditUserDto) {
     await this.userModel.findByIdAndUpdate(userid, dto);
+  }
+
+  async setRecoveryToken(
+    userid: string,
+    recoveryToken: string,
+    recoveryTokenDeath = moment().add(10, "minutes").toISOString(),
+  ) {
+    await this.userModel.findByIdAndUpdate(userid, {
+      recoveryToken,
+      recoveryTokenDeath,
+    });
   }
 
   async changePassword(userid: string, dto: ChangePasswordDto): Promise<void> {
@@ -100,5 +111,13 @@ export class UsersService {
     }
 
     await this.userModel.findByIdAndUpdate(userid, { password });
+  }
+
+  async recoverPassword(userid: string, password: string): Promise<void> {
+    const salt = await bcrypt.genSalt();
+    const hash = await bcrypt.hash(password, salt);
+
+    await this.userModel.findByIdAndUpdate(userid, { password: hash });
+    await this.setRecoveryToken(userid, null, null);
   }
 }

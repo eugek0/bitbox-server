@@ -2,6 +2,7 @@ export interface IConfig {
   port: number;
   mongoUri: string;
   origin: string;
+  frontendUrl: string;
   accessSecret: string;
   accessExpires: string;
   refreshSecret: string;
@@ -9,6 +10,11 @@ export interface IConfig {
   adminLogin: string;
   adminEmail: string;
   adminPassword: string;
+  mailerUser: string;
+  mailerPassword: string;
+  mailerHost: string;
+  mailerPort: string;
+  mailerSignature: string;
 }
 
 interface IConfigurationReturns {

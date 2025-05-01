@@ -5,6 +5,7 @@ export const configuration: Configuration = () => ({
     port: parseInt(process.env.PORT),
     mongoUri: process.env.MONGO_URI,
     origin: process.env.ORIGIN,
+    frontendUrl: process.env.FRONTEND_URL ?? process.env.ORIGIN,
     accessSecret: process.env.ACCESS_SECRET,
     accessExpires: process.env.ACCESS_EXPIRES,
     refreshSecret: process.env.REFRESH_SECRET,
@@ -12,5 +13,10 @@ export const configuration: Configuration = () => ({
     adminLogin: process.env.ADMIN_LOGIN,
     adminEmail: process.env.ADMIN_EMAIL,
     adminPassword: process.env.ADMIN_PASSWORD,
+    mailerUser: process.env.MAILER_USER,
+    mailerPassword: process.env.MAILER_PASSWORD,
+    mailerPort: process.env.MAILER_PASSWORD ?? "465",
+    mailerHost: process.env.MAILER_HOST,
+    mailerSignature: process.env.MAILER_SIGNATURE ?? "1",
   },
 });
