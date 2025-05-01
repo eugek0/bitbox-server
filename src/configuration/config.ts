@@ -5,7 +5,6 @@ export const configuration: Configuration = () => ({
     port: parseInt(process.env.PORT),
     mongoUri: process.env.MONGO_URI,
     origin: process.env.ORIGIN,
-    frontendUrl: process.env.FRONTEND_URL ?? process.env.ORIGIN,
     accessSecret: process.env.ACCESS_SECRET,
     accessExpires: process.env.ACCESS_EXPIRES,
     refreshSecret: process.env.REFRESH_SECRET,

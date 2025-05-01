@@ -9,7 +9,6 @@ import { LoggerService, LoggerFilter } from "./logger";
 import { UsersService } from "./users";
 import { APP_VERSION } from "./core";
 import { AppModule } from "./app";
-import { MailerService } from "@nestjs-modules/mailer";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

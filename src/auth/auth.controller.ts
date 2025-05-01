@@ -193,8 +193,13 @@ export class AuthController {
     description: "Отправлено письмо для восстановления пароля.",
   })
   @Get("send_recovery_letter")
-  async sendRecoveryLetter(@Query("email") email: string): Promise<void> {
-    const { mailerUser, frontendUrl } = this.configService.get<IConfig>("app");
+  async sendRecoveryLetter(
+    @Req() request: Request,
+    @Query("email") email: string,
+  ): Promise<void> {
+    const { mailerUser } = this.configService.get<IConfig>("app");
+    const host = request.get("host");
+    const protocol = request.headers["x-forwarded-proto"];
 
     const user = await this.usersService.getByEmail(email);
 
@@ -204,7 +209,7 @@ export class AuthController {
 
     const token = await this.authService.generateRecoverToken(email);
 
-    const href = `${frontendUrl}/auth/recover/${user._id.toString()}?token=${token}`;
+    const href = `${protocol}://${host}/auth/recover/${user._id.toString()}?token=${token}`;
 
     await this.mailerService.sendMail({
       to: email,
