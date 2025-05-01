@@ -193,14 +193,8 @@ export class AuthController {
     description: "Отправлено письмо для восстановления пароля.",
   })
   @Get("send_recovery_letter")
-  async sendRecoveryLetter(
-    @Req() request: Request,
-    @Query("email") email: string,
-  ): Promise<void> {
-    const { mailerUser } = this.configService.get<IConfig>("app");
-    const [_, port] = request.get("host").split(":");
-    const hostname = request.hostname;
-    const protocol = request.protocol;
+  async sendRecoveryLetter(@Query("email") email: string): Promise<void> {
+    const { mailerUser, frontendUrl } = this.configService.get<IConfig>("app");
 
     const user = await this.usersService.getByEmail(email);
 
@@ -210,7 +204,7 @@ export class AuthController {
 
     const token = await this.authService.generateRecoverToken(email);
 
-    const href = `${protocol}://${hostname}:${port}/auth/recover/${user._id.toString()}?token=${token}`;
+    const href = `${frontendUrl}/auth/recover/${user._id.toString()}?token=${token}`;
 
     await this.mailerService.sendMail({
       to: email,
