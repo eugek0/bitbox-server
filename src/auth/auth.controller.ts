@@ -18,23 +18,17 @@ import {
 import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
-import {
-  FormException,
-  INotification,
-  NotificationException,
-  TrimStringsPipe,
-} from "@/core";
+import { INotification, TrimStringsPipe } from "@/core";
 import { JwtGuard } from "./jwt.guard";
 import { RegisterUserDto, LoginUserDto, ProfileDto } from "./dtos";
 import { MailerService } from "@nestjs-modules/mailer";
 import { ConfigService } from "@nestjs/config";
 import { IConfig } from "@/configuration";
-import { getRecoverHTML } from "./utils";
 import { UsersService } from "@/users";
 import * as bcrypt from "bcryptjs";
 import { RecoverPasswordDto } from "./dtos/recover.dto";
 import * as moment from "moment";
-import { deserializeUser } from "passport";
+import { getRecoverHTML } from "./utils";
 
 @Controller("auth")
 export class AuthController {
@@ -218,6 +212,31 @@ export class AuthController {
       subject: "Восстановление пароля",
       html: getRecoverHTML(href, user.name ?? user.login),
     });
+  }
+
+  @ApiTags("Профиль")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Токен является действительным",
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: "Токен является недействительным",
+  })
+  @Get("check_recovery_token/:userid")
+  async checkToken(
+    @Param("userid") userid: string,
+    @Query("token") token: string,
+  ): Promise<void> {
+    const user = await this.usersService.getById(userid);
+
+    if (
+      !user ||
+      !bcrypt.compare(token, user.recoveryToken) ||
+      moment().isAfter(moment(user.recoveryTokenDeath))
+    ) {
+      throw new ForbiddenException("Токен является недействительным");
+    }
   }
 
   @ApiTags("Профиль")
