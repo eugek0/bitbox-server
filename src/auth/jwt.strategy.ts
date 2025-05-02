@@ -27,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (
       payload.type === "pubapi" &&
       (!questioner.developerToken ||
-        !bcrypt.compare(payload.dev, questioner.developerToken))
+        !(await bcrypt.compare(payload.dev, questioner.developerToken)))
     ) {
       throw new UnauthorizedException();
     }

@@ -68,9 +68,13 @@ export class AuthController {
     const { access, refresh } = await this.authService.register(dto);
     response.cookie("access", access, {
       httpOnly: true,
+      sameSite: "strict",
+      secure: true,
     });
     response.cookie("refresh", refresh, {
       httpOnly: true,
+      sameSite: "strict",
+      secure: true,
     });
   }
 
@@ -102,9 +106,13 @@ export class AuthController {
     const { access, refresh } = await this.authService.login(dto);
     response.cookie("access", access, {
       httpOnly: true,
+      sameSite: "strict",
+      secure: true,
     });
     response.cookie("refresh", refresh, {
       httpOnly: true,
+      sameSite: "strict",
+      secure: true,
     });
   }
 
@@ -123,9 +131,13 @@ export class AuthController {
   async logout(@Res({ passthrough: true }) response: Response): Promise<void> {
     response.cookie("access", "", {
       httpOnly: true,
+      sameSite: "strict",
+      secure: true,
     });
     response.cookie("refresh", "", {
       httpOnly: true,
+      sameSite: "strict",
+      secure: true,
     });
   }
 
@@ -162,9 +174,13 @@ export class AuthController {
     const { access, refresh } = await this.authService.refresh(oldRefresh);
     response.cookie("access", access, {
       httpOnly: true,
+      sameSite: "strict",
+      secure: true,
     });
     response.cookie("refresh", refresh, {
       httpOnly: true,
+      sameSite: "strict",
+      secure: true,
     });
   }
 

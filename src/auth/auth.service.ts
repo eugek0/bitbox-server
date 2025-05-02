@@ -107,7 +107,7 @@ export class AuthService {
     );
 
     const salt = await bcrypt.genSalt();
-    const hash = await bcrypt.hash(token, salt);
+    const hash = await bcrypt.hash(dev, salt);
     await this.usersService.setDeveloperToken(userid, hash);
 
     return token;
