@@ -111,6 +111,7 @@ export class UsersService {
     }
 
     await this.userModel.findByIdAndUpdate(userid, { password });
+    await this.setDeveloperToken(userid, null);
   }
 
   async recoverPassword(userid: string, password: string): Promise<void> {
@@ -119,5 +120,13 @@ export class UsersService {
 
     await this.userModel.findByIdAndUpdate(userid, { password: hash });
     await this.setRecoveryToken(userid, null, null);
+    await this.setDeveloperToken(userid, null);
+  }
+
+  async setDeveloperToken(
+    userid: string,
+    developerToken: string,
+  ): Promise<void> {
+    await this.userModel.findByIdAndUpdate(userid, { developerToken });
   }
 }

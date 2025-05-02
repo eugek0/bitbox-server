@@ -16,13 +16,8 @@ import {
   Nullable,
   exists,
 } from "@/core";
-import { UsersService, User } from "@/users";
-import {
-  CreateStorageDto,
-  DeleteStoragesDto,
-  EditStorageDto,
-  SearchStoragesDto,
-} from "./dtos";
+import { UsersService, User, UserRole } from "@/users";
+import { CreateStorageDto, DeleteStoragesDto, SearchStoragesDto } from "./dtos";
 import { EntitiesService } from "@/entities";
 import * as moment from "moment";
 
@@ -48,7 +43,7 @@ export class StoragesService {
   async getAvailable(userid: string): Promise<Storage[]> {
     const questioner = await this.usersService.getById(userid);
 
-    if (questioner.role === "admin") {
+    if ((["administrator", "owner"] as UserRole[]).includes(questioner.role)) {
       return this.storageModel.find().lean();
     }
 
@@ -173,7 +168,7 @@ export class StoragesService {
 
   private checkAccess(questioner: User, storage: Storage) {
     const result =
-      questioner.role === "admin" ||
+      (["administrator", "owner"] as UserRole[]).includes(questioner.role) ||
       storage.access === "public" ||
       storage.owner.toString() === questioner._id.toString() ||
       storage.members.some(

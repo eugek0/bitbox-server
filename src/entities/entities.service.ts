@@ -33,7 +33,7 @@ import { Response } from "express";
 import { PasteEntityDto } from "./dtos";
 import { RenameEntityDto } from "./dtos/rename.dto";
 import { SearchEntitiesDto } from "./dtos/search.dto";
-import { User, UsersService } from "@/users";
+import { User, UserRole, UsersService } from "@/users";
 
 @Injectable()
 export class EntitiesService {
@@ -613,7 +613,7 @@ export class EntitiesService {
 
   private checkAccess(questioner: User, storage: Storage) {
     const result =
-      questioner.role === "admin" ||
+      (["administrator", "owner"] as UserRole[]).includes(questioner.role) ||
       storage?.access === "public" ||
       storage?.owner.toString() === questioner._id.toString() ||
       storage?.members.some(

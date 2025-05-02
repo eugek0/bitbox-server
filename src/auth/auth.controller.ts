@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   HttpStatus,
@@ -18,7 +19,7 @@ import {
 import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
-import { INotification, TrimStringsPipe } from "@/core";
+import { INotification, TrimStringsPipe, User } from "@/core";
 import { JwtGuard } from "./jwt.guard";
 import { RegisterUserDto, LoginUserDto, ProfileDto } from "./dtos";
 import { MailerService } from "@nestjs-modules/mailer";
@@ -231,7 +232,7 @@ export class AuthController {
     const user = await this.usersService.getById(userid);
 
     if (
-      !user ||
+      !user?.recoveryToken ||
       !bcrypt.compare(token, user.recoveryToken) ||
       moment().isAfter(moment(user.recoveryTokenDeath))
     ) {
@@ -271,5 +272,40 @@ export class AuthController {
         },
       },
     };
+  }
+
+  @ApiTags("Профиль")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Сгенерированный токен разработчика.",
+  })
+  @UseGuards(JwtGuard)
+  @Post("dev_token")
+  async generateDeveloperToken(@User() userid: string): Promise<string> {
+    return this.authService.generateDeveloperToken(userid);
+  }
+
+  @ApiTags("Профиль")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Токен разработчика удален.",
+  })
+  @UseGuards(JwtGuard)
+  @Delete("dev_token")
+  async deleteDevelopmentToken(@User() userid: string): Promise<void> {
+    await this.usersService.setDeveloperToken(userid, null);
+  }
+
+  @ApiTags("Профиль")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Есть ли у пользователя токен разработчика.",
+  })
+  @UseGuards(JwtGuard)
+  @Get("dev_token")
+  async checkDeveloperToken(@User() userid: string): Promise<boolean> {
+    const user = await this.usersService.getById(userid);
+
+    return !!user.developerToken;
   }
 }

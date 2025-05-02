@@ -44,6 +44,9 @@ export class User {
 
   @Prop({ default: "email" })
   readonly prefered_contacts: ContactType;
+
+  @Prop()
+  readonly developerToken: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

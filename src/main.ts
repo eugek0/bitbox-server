@@ -48,10 +48,10 @@ async function bootstrap() {
     !(await userService.getByEmail(adminEmail))
   ) {
     userService.create({
-      login: adminLogin ?? "administrator",
+      login: adminLogin ?? "owner",
       email: adminEmail,
       password: adminPassword,
-      role: "admin",
+      role: "owner",
     });
   }
 

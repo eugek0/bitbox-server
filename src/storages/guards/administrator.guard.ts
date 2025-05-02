@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { UsersService, User } from "@/users";
+import { UsersService, User, UserRole } from "@/users";
 import { StoragesService } from "../storages.service";
 import { Storage } from "../schemas";
 import { StorageBaseGuard } from "./base.guard";
@@ -18,7 +18,7 @@ export class StorageAdministratorGuard extends StorageBaseGuard {
       );
 
       return (
-        questioner.role === "admin" ||
+        (["administrator", "owner"] as UserRole[]).includes(questioner.role) ||
         storage.owner.toString() === questioner._id.toString() ||
         member?.role === "administrator" ||
         (storage.defaultRole === "administrator" &&

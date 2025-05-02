@@ -6,11 +6,13 @@ import { UsersService, User } from "@/users";
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
-import { FormException, isHttpException } from "@/core";
+import { FormException, genRandomString, isHttpException } from "@/core";
 import { LoginUserDto, ProfileDto, RegisterUserDto } from "./dtos";
 import { ITokenPayload, ITokens } from "./types";
+import { NotFoundError } from "rxjs";
 
 @Injectable()
 export class AuthService {
@@ -67,24 +69,46 @@ export class AuthService {
       throw new BadRequestException("Такого пользователя не существует");
     }
 
-    const { password, ...profile } = user;
+    const { password, developerToken, ...profile } = user;
 
     return profile;
   }
 
   async generateRecoverToken(email: string): Promise<string> {
-    const chars =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let token = "";
-    for (let i = 0; i < 8; i++) {
-      token += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
+    const token = genRandomString();
 
     const salt = await bcrypt.genSalt();
     const hash = await bcrypt.hash(token, salt);
 
     const { _id } = await this.usersService.getByEmail(email);
     await this.usersService.setRecoveryToken(_id.toString(), hash);
+
+    return token;
+  }
+
+  async generateDeveloperToken(userid: string): Promise<string> {
+    const { accessSecret } = this.configService.get<IConfig>("app");
+    const user = await this.usersService.getById(userid);
+
+    if (!user) {
+      throw new NotFoundException("Пользователя с таким ID не существует");
+    }
+
+    const dev = genRandomString();
+
+    const token = await this.jwtService.signAsync(
+      {
+        sub: userid,
+        role: user.role,
+        type: "pubapi",
+        dev,
+      },
+      { secret: accessSecret },
+    );
+
+    const salt = await bcrypt.genSalt();
+    const hash = await bcrypt.hash(token, salt);
+    await this.usersService.setDeveloperToken(userid, hash);
 
     return token;
   }
