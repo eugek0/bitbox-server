@@ -5,19 +5,21 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import * as cookieParser from "cookie-parser";
 import * as fsp from "fs/promises";
 import { IConfig } from "./configuration";
-import { LoggerService, LoggerFilter } from "./logger";
 import { UsersService } from "./users";
 import { APP_VERSION } from "./core";
 import { AppModule } from "./app";
+import { LoggerService } from "./logger";
+import { METHODS_SEED } from "./seeds";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const loggerService = app.get(LoggerService);
   const userService = app.get(UsersService);
-  const { port, origin, adminLogin, adminEmail, adminPassword } = app
-    .get(ConfigService)
-    .get<IConfig>("app");
+  const loggerService = app.get(LoggerService);
+  const configService = app.get(ConfigService);
+
+  const { port, origin, adminLogin, adminEmail, adminPassword } =
+    configService.get<IConfig>("app");
 
   app.use(cookieParser());
   app.enableCors({
@@ -26,7 +28,6 @@ async function bootstrap() {
   });
 
   app.useGlobalPipes(new ValidationPipe());
-  app.useGlobalFilters(new LoggerFilter(loggerService));
 
   const documentConfig = new DocumentBuilder()
     .setTitle("Документация к BitBox API")
@@ -58,6 +59,12 @@ async function bootstrap() {
 
   await fsp.mkdir("temp", { recursive: true });
   await fsp.mkdir("storages", { recursive: true });
+
+  const methods = await loggerService.methodsCount();
+
+  if (methods === 0) {
+    await loggerService.seedMethodsDescriptions(METHODS_SEED);
+  }
 
   const document = SwaggerModule.createDocument(app, documentConfig);
   SwaggerModule.setup("api", app, document);

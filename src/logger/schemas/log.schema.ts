@@ -1,5 +1,6 @@
+import { User } from "@/core";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument } from "mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
 
 export type LogDocument = HydratedDocument<Log>;
 
@@ -7,14 +8,34 @@ export type LogDocument = HydratedDocument<Log>;
 export class Log {
   _id: string;
 
-  @Prop()
-  message: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, default: null })
+  user: string | null;
 
   @Prop()
-  createdAt: string;
+  method: string;
 
   @Prop()
-  user: string;
+  url: string;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  ip: string;
+
+  @Prop()
+  userAgent: string;
+
+  @Prop()
+  type: "pubapi" | "user";
+
+  @Prop({ type: Object })
+  body: Record<string, any>;
+
+  @Prop({ type: Object })
+  query: Record<string, any>;
 }
 
 export const LogSchema = SchemaFactory.createForClass(Log);
+
+LogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 30 });

@@ -1,6 +1,6 @@
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
-import { Module } from "@nestjs/common";
+import { MiddlewareConsumer, Module } from "@nestjs/common";
 import { configuration, IConfig } from "@/configuration";
 import { StoragesModule } from "@/storages";
 import { LoggerModule } from "@/logger";
@@ -10,6 +10,7 @@ import { AppService } from "./app.service";
 import { EntitiesModule } from "@/entities";
 import { MailerModule } from "@nestjs-modules/mailer";
 import { PugAdapter } from "@nestjs-modules/mailer/dist/adapters/pug.adapter";
+import { LoggerMiddleware } from "@/logger/logger.middleware";
 
 @Module({
   imports: [
@@ -52,4 +53,8 @@ import { PugAdapter } from "@nestjs-modules/mailer/dist/adapters/pug.adapter";
   ],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes("*");
+  }
+}

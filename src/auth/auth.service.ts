@@ -138,14 +138,14 @@ export class AuthService {
 
     return {
       access: await this.jwtService.signAsync(
-        { sub: _id, role },
+        { sub: _id, type: "user", role },
         {
           secret: accessSecret,
           expiresIn: accessExpires,
         },
       ),
       refresh: await this.jwtService.signAsync(
-        { sub: _id, role },
+        { sub: _id, type: "user", role },
         {
           secret: refreshSecret,
           expiresIn: refreshExpires,
