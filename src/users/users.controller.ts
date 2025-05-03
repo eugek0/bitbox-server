@@ -7,7 +7,9 @@ import {
   Param,
   Patch,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
 import { DefaultOptionType } from "antd/es/select";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
@@ -18,6 +20,7 @@ import { User } from "./schemas";
 import { EditUserDto } from "./dtos/edit.dto";
 import { ChangePasswordDto } from "./dtos/changePassword.dto";
 import { ChangeRoleDto } from "./dtos/changeRole.dto";
+import { FileInterceptor } from "@nestjs/platform-express";
 
 @Controller("users")
 export class UsersController {
@@ -75,6 +78,21 @@ export class UsersController {
     }
 
     await this.usersService.changeRole(userid, dto.role);
+  }
+
+  @ApiTags("Пользователи")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Пользователи.",
+  })
+  @Patch("avatar/:userid")
+  @UseGuards(JwtGuard)
+  @UseInterceptors(FileInterceptor("avatar"))
+  async changeAvatar(
+    @Param("userid") userid: string,
+    @UploadedFile() avatar: Express.Multer.File,
+  ): Promise<void> {
+    await this.usersService.changeAvatar(userid, avatar);
   }
 
   @ApiTags("Пользователи")

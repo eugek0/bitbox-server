@@ -123,6 +123,28 @@ export class UsersService {
     await this.userModel.findByIdAndUpdate(userid, { role }).exec();
   }
 
+  async changeAvatar(
+    userid: string,
+    image: Express.Multer.File,
+  ): Promise<void> {
+    let avatar: string;
+
+    if (image) {
+      const base64 = image.buffer.toString("base64");
+      const mimetype = image.mimetype;
+      avatar = `data:${mimetype};base64,${base64}`;
+    } else {
+      avatar = generateAvatar({
+        blocks: 6,
+        width: 100,
+      }).base64;
+    }
+
+    await this.userModel.findByIdAndUpdate(userid, {
+      avatar,
+    });
+  }
+
   async recoverPassword(userid: string, password: string): Promise<void> {
     const salt = await bcrypt.genSalt();
     const hash = await bcrypt.hash(password, salt);
