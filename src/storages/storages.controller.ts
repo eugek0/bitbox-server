@@ -188,6 +188,7 @@ export class StoragesController {
       ).map((entity) => ({
         storage: entity.storage.toString(),
         extension: entity.extension,
+        parent: entity.parent,
         label: entity.fullname,
         value: entity._id,
         type: entity.type,
