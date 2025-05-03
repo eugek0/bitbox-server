@@ -51,6 +51,7 @@ async function bootstrap() {
       login: adminLogin ?? "owner",
       email: adminEmail,
       password: adminPassword,
+      isCreator: true,
       role: "owner",
     });
   }

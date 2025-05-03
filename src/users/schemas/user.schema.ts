@@ -47,6 +47,9 @@ export class User {
 
   @Prop()
   readonly developerToken: string;
+
+  @Prop()
+  readonly isCreator: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

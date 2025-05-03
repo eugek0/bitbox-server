@@ -17,6 +17,7 @@ import { FormException, INotification, Nullable } from "@/core";
 import { User } from "./schemas";
 import { EditUserDto } from "./dtos/edit.dto";
 import { ChangePasswordDto } from "./dtos/changePassword.dto";
+import { ChangeRoleDto } from "./dtos/changeRole.dto";
 
 @Controller("users")
 export class UsersController {
@@ -43,6 +44,37 @@ export class UsersController {
     }
 
     return await this.usersService.get({ _id, email, login });
+  }
+
+  @ApiTags("Пользователи")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Пользователи.",
+  })
+  @Get("all")
+  @UseGuards(JwtGuard)
+  async getAll(): Promise<User[]> {
+    return await this.usersService.getAll({ password: false });
+  }
+
+  @ApiTags("Пользователи")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Пользователи.",
+  })
+  @Patch("role/:userid")
+  @UseGuards(JwtGuard)
+  async changeRole(
+    @Param("userid") userid: string,
+    @Body() dto: ChangeRoleDto,
+  ): Promise<void> {
+    const user = await this.usersService.getById(userid);
+
+    if (user.isCreator) {
+      throw new BadRequestException("Нельзя изменить роль у создателя сервиса");
+    }
+
+    await this.usersService.changeRole(userid, dto.role);
   }
 
   @ApiTags("Пользователи")

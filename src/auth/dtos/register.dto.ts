@@ -1,6 +1,7 @@
 import { UserRole } from "@/users";
 import { ApiProperty } from "@nestjs/swagger";
 import {
+  IsBoolean,
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -57,4 +58,8 @@ export class RegisterUserDto {
     example: "admin",
   })
   readonly role?: UserRole;
+
+  @IsOptional()
+  @IsBoolean()
+  readonly isCreator?: boolean;
 }

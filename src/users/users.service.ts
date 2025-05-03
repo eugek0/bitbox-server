@@ -10,6 +10,7 @@ import { RegisterUserDto } from "@/auth";
 import { GetUserDto } from "./dtos";
 import { EditUserDto } from "./dtos/edit.dto";
 import { ChangePasswordDto } from "./dtos/changePassword.dto";
+import { UserRole } from "./types";
 
 @Injectable()
 export class UsersService {
@@ -38,8 +39,12 @@ export class UsersService {
       .exec();
   }
 
-  async getAll(): Promise<User[]> {
-    return await this.userModel.find().lean().exec();
+  async getAll({ password }: { password?: boolean }): Promise<User[]> {
+    return await this.userModel
+      .find()
+      .lean()
+      .select(password ? null : "-password")
+      .exec();
   }
 
   async getAllUsers({
@@ -112,6 +117,10 @@ export class UsersService {
 
     await this.userModel.findByIdAndUpdate(userid, { password });
     await this.setDeveloperToken(userid, null);
+  }
+
+  async changeRole(userid: string, role: UserRole): Promise<void> {
+    await this.userModel.findByIdAndUpdate(userid, { role }).exec();
   }
 
   async recoverPassword(userid: string, password: string): Promise<void> {
