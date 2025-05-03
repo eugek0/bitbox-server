@@ -58,7 +58,6 @@ async function bootstrap() {
 
   await fsp.mkdir("temp", { recursive: true });
   await fsp.mkdir("storages", { recursive: true });
-  await fsp.mkdir("avatars", { recursive: true });
 
   const document = SwaggerModule.createDocument(app, documentConfig);
   SwaggerModule.setup("api", app, document);
