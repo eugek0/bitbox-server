@@ -148,6 +148,20 @@ export class StoragesController {
   @ApiTags("Хранилища")
   @ApiResponse({
     status: HttpStatus.OK,
+    description: "Хранилища удалены.",
+  })
+  @Get("user/:userid")
+  @UseGuards(JwtGuard)
+  async getUserStorages(
+    @Param("userid") userid: string,
+    @User() questionerid: string,
+  ): Promise<Storage[]> {
+    return await this.storagesService.getUserAvailable(questionerid, userid);
+  }
+
+  @ApiTags("Хранилища")
+  @ApiResponse({
+    status: HttpStatus.OK,
     description: "Список хранилищ для выпадающего списка.",
   })
   @Get("search/options")

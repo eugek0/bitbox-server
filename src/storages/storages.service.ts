@@ -40,8 +40,8 @@ export class StoragesService {
     return await this.storageModel.findOne({ name }).lean();
   }
 
-  async getAvailable(userid: string): Promise<Storage[]> {
-    const questioner = await this.usersService.getById(userid);
+  async getAvailable(questionerid: string): Promise<Storage[]> {
+    const questioner = await this.usersService.getById(questionerid);
 
     if ((["administrator", "owner"] as UserRole[]).includes(questioner.role)) {
       return this.storageModel.find().lean();
@@ -51,8 +51,32 @@ export class StoragesService {
       .find({
         $or: [
           { access: "public" },
-          { owner: userid },
-          { "members._id": userid },
+          { owner: questionerid },
+          { "members._id": questionerid },
+        ],
+      })
+      .lean();
+  }
+
+  async getUserAvailable(
+    questionerid: string,
+    userid: string,
+  ): Promise<Storage[]> {
+    const questioner = await this.usersService.getById(questionerid);
+
+    if (
+      userid === questionerid ||
+      ["owner", "administrator"].includes(questioner.role)
+    ) {
+      return await this.storageModel.find({ owner: userid });
+    }
+
+    return await this.storageModel
+
+      .find({
+        $or: [
+          { owner: userid, access: "public" },
+          { owner: userid, "members._id": questionerid },
         ],
       })
       .lean();
