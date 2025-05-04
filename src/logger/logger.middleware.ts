@@ -3,12 +3,15 @@ import { Request, Response, NextFunction } from "express";
 import { LoggerService } from "./logger.service";
 import { JwtService } from "@nestjs/jwt";
 import * as moment from "moment";
+import { ConfigService } from "@nestjs/config";
+import { IConfig } from "@/configuration";
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
   constructor(
     private readonly loggerService: LoggerService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async use(request: Request, _: Response, next: NextFunction) {
@@ -29,19 +32,25 @@ export class LoggerMiddleware implements NestMiddleware {
       (headers["Authorization"] as string)?.split(" ")[1] ??
       cookies.access;
 
-    const { sub, type } = token ? await this.jwtService.decode(token) : {};
+    try {
+      const { accessSecret } = this.configService.get<IConfig>("app");
 
-    this.loggerService.create({
-      user: sub,
-      method,
-      createdAt: moment().toDate(),
-      url: baseUrl,
-      ip,
-      type,
-      body,
-      userAgent: headers["user-agent"],
-      query,
-    });
+      const { sub, type } = token
+        ? await this.jwtService.verifyAsync(token, { secret: accessSecret })
+        : {};
+
+      this.loggerService.create({
+        user: sub,
+        method,
+        createdAt: moment().toDate(),
+        url: baseUrl,
+        ip,
+        type,
+        body,
+        userAgent: headers["user-agent"],
+        query,
+      });
+    } catch {}
 
     next();
   }
