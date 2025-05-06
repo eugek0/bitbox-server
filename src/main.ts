@@ -24,7 +24,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.enableCors({
     credentials: true,
-    origin: origin.split(","),
+    origin,
   });
 
   app.useGlobalPipes(new ValidationPipe());
