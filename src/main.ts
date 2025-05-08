@@ -6,13 +6,27 @@ import * as cookieParser from "cookie-parser";
 import * as fsp from "fs/promises";
 import { IConfig } from "./configuration";
 import { UsersService } from "./users";
-import { APP_VERSION } from "./core";
+import { APP_VERSION, exists } from "./core";
 import { AppModule } from "./app";
 import { LoggerService } from "./logger";
 import { METHODS_SEED } from "./seeds";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  let httpsOptions = {};
+
+  if (
+    (await exists("/etc/certs/privkey.pem")) &&
+    (await exists("/etc/certs/cert.pem"))
+  ) {
+    httpsOptions = {
+      key: await fsp.readFile("/etc/certs/privkey.pem"),
+      cert: await fsp.readFile("/etc/certs/cert.pem"),
+    };
+  }
+
+  const app = await NestFactory.create(AppModule, {
+    httpsOptions,
+  });
 
   const userService = app.get(UsersService);
   const loggerService = app.get(LoggerService);

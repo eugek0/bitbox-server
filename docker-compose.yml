@@ -9,6 +9,8 @@ services:
     volumes:
       - /etc/bitbox/storages:/app/storages
       - /etc/bitbox/temp:/app/temp
+      - /etc/letsencrypt/live/eugek0.ru/privkey.pem:/etc/certs/privkey.pem
+      - /etc/letsencrypt/live/eugek0.ru/cert.pem:/etc/certs/cert.pem
 
   mongodb:
     image: mongo
