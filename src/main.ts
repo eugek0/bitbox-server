@@ -10,9 +10,10 @@ import { APP_VERSION, exists } from "./core";
 import { AppModule } from "./app";
 import { LoggerService } from "./logger";
 import { METHODS_SEED } from "./seeds";
+import { HttpsOptions } from "@nestjs/common/interfaces/external/https-options.interface";
 
 async function bootstrap() {
-  let httpsOptions = {};
+  let httpsOptions: HttpsOptions;
 
   if (
     (await exists("/etc/certs/privkey.pem")) &&
