@@ -195,7 +195,7 @@ export class UsersController {
   @Get("/record")
   @UseGuards(JwtGuard)
   async getRecord(): Promise<Record<string, User>> {
-    const users = await this.usersService.getAllUsers({ password: false });
+    const users = await this.usersService.getAll({ password: false });
 
     return Object.fromEntries(
       Object.entries(Object.groupBy(users, (user) => user._id)).map(
