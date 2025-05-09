@@ -1,4 +1,4 @@
-import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiParam, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import {
   Body,
@@ -39,7 +39,11 @@ export class EntitiesController {
   @ApiTags("Сущности")
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Бинарник файла.",
+    description: "Получен бинарник файла.",
+  })
+  @ApiParam({
+    name: "storageid",
+    description: "ID хранилища",
   })
   @Post("/blob/:storageid")
   @UseGuards(JwtGuard, StorageWatcherGuard)
@@ -58,7 +62,16 @@ export class EntitiesController {
   @ApiTags("Сущности")
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Одна сущность хранилища.",
+    description: "Одна сущность хранилища",
+    type: Entity,
+  })
+  @ApiParam({
+    name: "storageid",
+    description: "ID хранилища",
+  })
+  @ApiParam({
+    name: "entityid",
+    description: "ID сущности",
   })
   @Get(":storageid/:entityid")
   @UseGuards(JwtGuard, StorageWatcherGuard)
@@ -71,7 +84,16 @@ export class EntitiesController {
   @ApiTags("Сущности")
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Список сущностей хранилища.",
+    description: "Список сущностей хранилища",
+    type: [Entity],
+  })
+  @ApiParam({
+    name: "storageid",
+    description: "ID хранилища",
+  })
+  @ApiQuery({
+    name: "parent",
+    description: "ID родительской сущности",
   })
   @Get(":storageid")
   @UseGuards(JwtGuard, StorageWatcherGuard)
@@ -91,6 +113,15 @@ export class EntitiesController {
   @ApiTags("Сущности")
   @ApiResponse({
     status: HttpStatus.CREATED,
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: "Сущности загружены",
+    type: [Entity],
+  })
+  @ApiParam({
+    name: "storageid",
+    description: "ID хранилища",
   })
   @Post(":storageid")
   @UseInterceptors(FilesInterceptor("entities"), MetadataFilesInterceptor)
@@ -113,6 +144,15 @@ export class EntitiesController {
   @ApiResponse({
     status: HttpStatus.CREATED,
   })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: "Директория создана",
+    type: [Entity],
+  })
+  @ApiParam({
+    name: "storageid",
+    description: "ID хранилища",
+  })
   @Post("mkdir/:storageid")
   @UseGuards(JwtGuard, StorageMaintainerGuard)
   async createDirectory(
@@ -127,6 +167,15 @@ export class EntitiesController {
   @ApiResponse({
     status: HttpStatus.OK,
   })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Сушности удалены",
+    type: [Entity],
+  })
+  @ApiParam({
+    name: "storageid",
+    description: "ID хранилища",
+  })
   @Delete("rm/:storageid")
   @UseGuards(JwtGuard, StorageMaintainerGuard)
   async delete(
@@ -140,6 +189,10 @@ export class EntitiesController {
   @ApiResponse({
     status: HttpStatus.OK,
   })
+  @ApiParam({
+    name: "storageid",
+    description: "ID хранилища",
+  })
   @Post("paste/:storageid")
   @UseGuards(JwtGuard, StorageMaintainerGuard)
   async paste(
@@ -152,6 +205,10 @@ export class EntitiesController {
   @ApiTags("Сущности")
   @ApiResponse({
     status: HttpStatus.OK,
+  })
+  @ApiParam({
+    name: "storageid",
+    description: "ID хранилища",
   })
   @Patch("rename/:storageid")
   @UseGuards(JwtGuard, StorageMaintainerGuard)
