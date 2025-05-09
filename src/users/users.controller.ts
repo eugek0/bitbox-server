@@ -186,6 +186,11 @@ export class UsersController {
     };
   }
 
+  @ApiTags("Пользователи")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Получен словарь пользователей",
+  })
   @Get("/record")
   @UseGuards(JwtGuard)
   async getRecord(): Promise<Record<string, User>> {
@@ -198,6 +203,11 @@ export class UsersController {
     );
   }
 
+  @ApiTags("Пользователи")
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Получены элементы списка пользователей",
+  })
   @Get("/options")
   @UseGuards(JwtGuard)
   async getOptions(): Promise<DefaultOptionType[]> {
