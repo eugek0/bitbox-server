@@ -5,6 +5,8 @@ import { IConfig } from "@/configuration/types";
 import { UsersService, User } from "@/users";
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -16,6 +18,7 @@ import { ITokenPayload, ITokens } from "./types";
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
     private configService: ConfigService,
     private jwtService: JwtService,

@@ -4,8 +4,10 @@ import {
   Controller,
   Delete,
   ForbiddenException,
+  forwardRef,
   Get,
   HttpStatus,
+  Inject,
   Param,
   Patch,
   Post,
@@ -43,6 +45,7 @@ export class AuthController {
     private authService: AuthService,
     private mailerService: MailerService,
     private configService: ConfigService,
+    @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
   ) {}
 

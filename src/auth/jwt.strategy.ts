@@ -1,6 +1,11 @@
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { PassportStrategy } from "@nestjs/passport";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { IConfig } from "@/configuration";
 import { Request } from "express";
@@ -11,6 +16,7 @@ import bcrypt from "bcryptjs";
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private configService: ConfigService,
+    @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
   ) {
     super({

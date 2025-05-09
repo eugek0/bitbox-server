@@ -22,6 +22,7 @@ import { ChangePasswordDto } from "./dtos/changePassword.dto";
 import { ChangeRoleDto } from "./dtos/changeRole.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ProfileDto } from "@/auth/dtos";
+import { AuthOwnerGuard } from "@/auth";
 
 @Controller("users")
 export class UsersController {
@@ -85,7 +86,7 @@ export class UsersController {
     description: "ID пользователя",
   })
   @Patch("role/:userid")
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, AuthOwnerGuard)
   async changeRole(
     @Param("userid") userid: string,
     @Body() dto: ChangeRoleDto,
