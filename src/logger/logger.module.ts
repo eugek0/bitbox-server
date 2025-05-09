@@ -4,6 +4,8 @@ import { LoggerService } from "./logger.service";
 import { Log, LogSchema } from "./schemas";
 import { LoggerController } from "./logger.controller";
 import { Method, MethodSchema } from "./schemas/method.schema";
+import { AuthModule } from "@/auth";
+import { UsersModule } from "@/users";
 
 @Module({
   imports: [
@@ -11,6 +13,8 @@ import { Method, MethodSchema } from "./schemas/method.schema";
       { name: Log.name, schema: LogSchema },
       { name: Method.name, schema: MethodSchema },
     ]),
+    AuthModule,
+    UsersModule,
   ],
   providers: [LoggerService],
   exports: [LoggerService],

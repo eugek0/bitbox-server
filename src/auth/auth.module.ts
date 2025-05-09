@@ -4,11 +4,12 @@ import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { JwtStrategy } from "./jwt.strategy";
 import { UsersModule } from "@/users";
+import { AuthAdministratorGuard, AuthOwnerGuard } from "./guards";
 
 @Module({
   imports: [UsersModule, JwtModule.register({})],
-  providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
-  exports: [JwtModule],
+  providers: [AuthService, JwtStrategy, AuthAdministratorGuard, AuthOwnerGuard],
+  exports: [JwtModule, AuthAdministratorGuard, AuthOwnerGuard],
 })
 export class AuthModule {}
