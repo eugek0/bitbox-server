@@ -1,6 +1,6 @@
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from "bcryptjs";
+import bcrypt from "bcryptjs";
 import { IConfig } from "@/configuration/types";
 import { UsersService, User } from "@/users";
 import {
@@ -12,7 +12,6 @@ import {
 import { FormException, genRandomString, isHttpException } from "@/core";
 import { LoginUserDto, ProfileDto, RegisterUserDto } from "./dtos";
 import { ITokenPayload, ITokens } from "./types";
-import { NotFoundError } from "rxjs";
 
 @Injectable()
 export class AuthService {

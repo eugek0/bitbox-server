@@ -6,8 +6,8 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import * as p from "path";
-import * as fs from "fs/promises";
+import p from "path";
+import fs from "fs/promises";
 import { Storage } from "./schemas";
 import {
   STORAGE_ROOT,
@@ -19,7 +19,7 @@ import {
 import { UsersService, User, UserRole } from "@/users";
 import { CreateStorageDto, DeleteStoragesDto, SearchStoragesDto } from "./dtos";
 import { EntitiesService } from "@/entities";
-import * as moment from "moment";
+import moment from "moment";
 
 @Injectable()
 export class StoragesService {

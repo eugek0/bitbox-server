@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import * as generateAvatar from "github-like-avatar-generator";
-import * as moment from "moment";
-import * as bcrypt from "bcryptjs";
+import generateAvatar from "github-like-avatar-generator";
+import moment from "moment";
+import bcrypt from "bcryptjs";
 import { User } from "./schemas";
 import { FormException, Nullable } from "@/core";
 import { RegisterUserDto } from "@/auth";

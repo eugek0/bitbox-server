@@ -2,7 +2,7 @@ import { Injectable, NestMiddleware } from "@nestjs/common";
 import { Request, Response, NextFunction } from "express";
 import { LoggerService } from "./logger.service";
 import { JwtService } from "@nestjs/jwt";
-import * as moment from "moment";
+import moment from "moment";
 import { ConfigService } from "@nestjs/config";
 import { IConfig } from "@/configuration";
 

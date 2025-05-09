@@ -5,7 +5,7 @@ import { ConfigService } from "@nestjs/config";
 import { IConfig } from "@/configuration";
 import { Request } from "express";
 import { UsersService } from "@/users";
-import * as bcrypt from "bcryptjs";
+import bcrypt from "bcryptjs";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument } from "mongoose";
-import { Storage } from "@/storages/schemas";
+import { Storage } from "@/storages/schemas/storage.schema";
 import { EntityType } from "../types";
 import { User } from "@/core";
 import { ApiProperty } from "@nestjs/swagger";

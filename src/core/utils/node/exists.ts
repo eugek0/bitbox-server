@@ -1,4 +1,4 @@
-import * as fs from "fs/promises";
+import fs from "fs/promises";
 
 export async function exists(path: string) {
   try {

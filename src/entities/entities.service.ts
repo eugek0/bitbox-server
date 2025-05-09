@@ -7,12 +7,12 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
-import * as moment from "moment";
+import moment from "moment";
 import { InjectModel } from "@nestjs/mongoose";
 import mongoose, { Model } from "mongoose";
-import * as p from "path";
-import * as fsp from "fs/promises";
-import * as fs from "fs";
+import p from "path";
+import fsp from "fs/promises";
+import fs from "fs";
 import { Entity, EntityDocument } from "./schemas";
 import {
   convertBytes,
@@ -28,7 +28,7 @@ import {
   UploadEntitiesDto,
 } from "./dtos";
 import { IEntityBreadcrumb } from "./types";
-import * as archiver from "archiver";
+import archiver from "archiver";
 import { Response } from "express";
 import { PasteEntityDto } from "./dtos";
 import { RenameEntityDto } from "./dtos/rename.dto";

@@ -32,9 +32,9 @@ import { MailerService } from "@nestjs-modules/mailer";
 import { ConfigService } from "@nestjs/config";
 import { IConfig } from "@/configuration";
 import { UsersService } from "@/users";
-import * as bcrypt from "bcryptjs";
+import bcrypt from "bcryptjs";
 import { RecoverPasswordDto } from "./dtos/recover.dto";
-import * as moment from "moment";
+import moment from "moment";
 import { getRecoverHTML } from "./utils";
 
 @Controller("auth")

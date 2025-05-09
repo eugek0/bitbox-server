@@ -7,7 +7,7 @@ import { StoragesModule } from "@/storages/storages.module";
 import { JwtModule } from "@nestjs/jwt";
 import { UsersModule } from "@/users";
 import { MulterModule } from "@nestjs/platform-express";
-import * as multer from "multer";
+import multer from "multer";
 import { v4 } from "uuid";
 
 @Module({
