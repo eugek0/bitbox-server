@@ -24,9 +24,12 @@ export class StorageBaseGuard implements CanActivate {
 
     const storages = request.body.storages ?? [request.params.storageid];
 
-    const payload = this.jwtService.decode(
-      request.cookies.access,
-    ) as JwtPayload;
+    const token =
+      request.headers.Authorization?.toString().split(" ")[1] ??
+      request.headers.authorization?.toString().split(" ")[1] ??
+      request?.cookies?.access;
+
+    const payload = this.jwtService.decode(token) as JwtPayload;
     const questioner = await this.usersService.getById(payload.sub);
 
     for (const storageid of storages) {
