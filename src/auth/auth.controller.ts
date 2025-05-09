@@ -16,7 +16,13 @@ import {
   UseGuards,
   UsePipes,
 } from "@nestjs/common";
-import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBody,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import { INotification, TrimStringsPipe, User } from "@/core";
@@ -193,6 +199,10 @@ export class AuthController {
     status: HttpStatus.OK,
     description: "Отправлено письмо для восстановления пароля.",
   })
+  @ApiQuery({
+    name: "email",
+    description: "Адрес электронной почты",
+  })
   @Get("send_recovery_letter")
   async sendRecoveryLetter(@Query("email") email: string): Promise<void> {
     const { mailerUser, frontendUrl } = this.configService.get<IConfig>("app");
@@ -224,6 +234,14 @@ export class AuthController {
     status: HttpStatus.FORBIDDEN,
     description: "Токен является недействительным",
   })
+  @ApiQuery({
+    name: "token",
+    description: "Токен восстановления",
+  })
+  @ApiParam({
+    name: "userid",
+    description: "ID пользователя",
+  })
   @Get("check_recovery_token/:userid")
   async checkToken(
     @Param("userid") userid: string,
@@ -244,6 +262,14 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: "Пароль восстановлен.",
+  })
+  @ApiParam({
+    name: "userid",
+    description: "ID пользователя",
+  })
+  @ApiQuery({
+    name: "token",
+    description: "Токен восстановления",
   })
   @Patch("recover/:userid")
   async recover(
@@ -277,7 +303,7 @@ export class AuthController {
   @ApiTags("Профиль")
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Сгенерированный токен разработчика.",
+    description: "Токен разработчика сгенерирован",
   })
   @UseGuards(JwtGuard)
   @Post("dev_token")
@@ -288,7 +314,7 @@ export class AuthController {
   @ApiTags("Профиль")
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Токен разработчика удален.",
+    description: "Токен разработчика удален",
   })
   @UseGuards(JwtGuard)
   @Delete("dev_token")
@@ -299,7 +325,8 @@ export class AuthController {
   @ApiTags("Профиль")
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Есть ли у пользователя токен разработчика.",
+    description:
+      "Возвращен флаг присутствия у пользователя токена разработчика",
   })
   @UseGuards(JwtGuard)
   @Get("dev_token")
