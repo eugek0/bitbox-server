@@ -12,7 +12,7 @@ import {
   UsePipes,
 } from "@nestjs/common";
 import { DefaultOptionType } from "antd/es/select";
-import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { StoragesService } from "./storages.service";
 import { JwtGuard } from "@/auth";
 import { Storage } from "./schemas";
@@ -38,7 +38,8 @@ export class StoragesController {
   @ApiTags("Хранилища")
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Список хранилищ.",
+    description: "Получен список хранилищ",
+    type: [Storage],
   })
   @Get()
   @UseGuards(JwtGuard)
@@ -49,7 +50,8 @@ export class StoragesController {
   @ApiTags("Хранилища")
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Получить информацию о хранилище.",
+    description: "Получена информация о хранилище",
+    type: Storage,
   })
   @Get(":storageid")
   @UseGuards(JwtGuard, StorageWatcherGuard)
@@ -79,6 +81,9 @@ export class StoragesController {
     status: HttpStatus.CREATED,
     description: "Хранилище создано.",
   })
+  @ApiBody({
+    type: Storage,
+  })
   @UsePipes(TrimStringsPipe)
   @Post()
   @UseGuards(JwtGuard)
@@ -103,6 +108,13 @@ export class StoragesController {
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: "Хранилище создано.",
+  })
+  @ApiBody({
+    type: Storage,
+  })
+  @ApiParam({
+    name: "storageid",
+    description: "ID хранилища",
   })
   @UsePipes(TrimStringsPipe)
   @Put(":storageid")
@@ -148,7 +160,12 @@ export class StoragesController {
   @ApiTags("Хранилища")
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Хранилища удалены.",
+    description: "Получены хранилища пользователя",
+    type: [Storage],
+  })
+  @ApiParam({
+    name: "userid",
+    description: "ID пользователя",
   })
   @Get("user/:userid")
   @UseGuards(JwtGuard)
