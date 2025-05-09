@@ -12,7 +12,7 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { DefaultOptionType } from "antd/es/select";
-import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiParam, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { UsersService } from "./users.service";
 import { JwtGuard } from "@/auth/jwt.guard";
 import { FormException, INotification, Nullable } from "@/core";
@@ -21,6 +21,7 @@ import { EditUserDto } from "./dtos/edit.dto";
 import { ChangePasswordDto } from "./dtos/changePassword.dto";
 import { ChangeRoleDto } from "./dtos/changeRole.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { ProfileDto } from "@/auth/dtos";
 
 @Controller("users")
 export class UsersController {
@@ -30,10 +31,23 @@ export class UsersController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: "Пользователь.",
+    type: ProfileDto,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: "Отсутствуют фильтры для поиска.",
+  })
+  @ApiQuery({
+    name: "_id",
+    description: "ID пользователя",
+  })
+  @ApiQuery({
+    name: "email",
+    description: "Email адрес пользователя",
+  })
+  @ApiQuery({
+    name: "login",
+    description: "Логин пользователя",
   })
   @Get()
   @UseGuards(JwtGuard)
@@ -53,6 +67,7 @@ export class UsersController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: "Пользователи.",
+    type: [ProfileDto],
   })
   @Get("all")
   @UseGuards(JwtGuard)
@@ -63,7 +78,11 @@ export class UsersController {
   @ApiTags("Пользователи")
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Пользователи.",
+    description: "Роль пользователя изменена",
+  })
+  @ApiParam({
+    name: "userid",
+    description: "ID пользователя",
   })
   @Patch("role/:userid")
   @UseGuards(JwtGuard)
@@ -83,7 +102,11 @@ export class UsersController {
   @ApiTags("Пользователи")
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Пользователи.",
+    description: "Аватар пользователя изменен.",
+  })
+  @ApiParam({
+    name: "userid",
+    description: "ID пользователя",
   })
   @Patch("avatar/:userid")
   @UseGuards(JwtGuard)
@@ -99,6 +122,10 @@ export class UsersController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: "Пользователь успешно изменен.",
+  })
+  @ApiParam({
+    name: "userid",
+    description: "ID пользователя",
   })
   @Patch(":userid")
   @UseGuards(JwtGuard)
@@ -138,6 +165,10 @@ export class UsersController {
   })
   @Patch("password/:userid")
   @UseGuards(JwtGuard)
+  @ApiParam({
+    name: "userid",
+    description: "ID пользователя",
+  })
   async changePassword(
     @Param("userid") userid: string,
     @Body() dto: ChangePasswordDto,
