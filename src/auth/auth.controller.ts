@@ -130,12 +130,8 @@ export class AuthController {
   })
   @Get("logout")
   async logout(@Res({ passthrough: true }) response: Response): Promise<void> {
-    response.cookie("access", "", {
-      httpOnly: true,
-    });
-    response.cookie("refresh", "", {
-      httpOnly: true,
-    });
+    response.clearCookie("access", { httpOnly: true });
+    response.clearCookie("refresh", { httpOnly: true });
   }
 
   @ApiTags("Профиль")
