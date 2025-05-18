@@ -100,13 +100,21 @@ export class EntitiesController {
   async get(
     @Param("storageid") storageid: string,
     @Query("parent") parent: string,
+    @Query("page") page: number,
+    @Query("limit") limit: number,
   ): Promise<GetEntitiesDto> {
-    const items = await this.entitiesService.get(storageid, parent);
+    const [items, count] = await this.entitiesService.get(
+      storageid,
+      page,
+      limit,
+      parent,
+    );
     const breadcrumbs = await this.entitiesService.getBreadcrumbs(parent);
 
     return {
       items,
       breadcrumbs,
+      count,
     };
   }
 

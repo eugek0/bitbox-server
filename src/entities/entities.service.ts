@@ -48,13 +48,36 @@ export class EntitiesService {
     return await this.entityModel.findById(entityid).lean();
   }
 
-  async get(storageid: string, parent?: string): Promise<Entity[]> {
-    return await this.entityModel
-      .find({
+  async get(
+    storageid: string,
+    page: number,
+    limit: number = 15,
+    parent?: string,
+  ): Promise<[Entity[], number]> {
+    const skip = (page - 1) * limit;
+    const [data, total] = await Promise.all([
+      this.entityModel
+        .find({
+          storage: storageid,
+          parent: !parent || parent === "undefined" ? null : parent,
+        })
+        .skip(skip)
+        .limit(limit)
+        .lean()
+        .exec(),
+      this.entityModel.countDocuments({
         storage: storageid,
-        parent: !parent || parent === "undefined" ? null : parent,
-      })
-      .lean();
+        parent: parent ?? null,
+      }),
+    ]);
+    return [data, total];
+  }
+
+  async getAll(storageid: string, parent?: string): Promise<Entity[]> {
+    return await this.entityModel.find({
+      storage: storageid,
+      parent: !parent || parent === "undefined" ? null : parent,
+    });
   }
 
   async downloadEntities(
@@ -116,7 +139,7 @@ export class EntitiesService {
   ): Promise<void> {
     const uploadedAt = moment().toISOString();
     const storage = await this.storagesService.getById(storageid);
-    const storageEntities = await this.get(storageid, dto.parent);
+    const storageEntities = await this.getAll(storageid, dto.parent);
     const newEntities: EntityDocument[] = [];
     const totalEntitiesSize = entities.reduce(
       (accumulator, entity) => accumulator + entity.size,

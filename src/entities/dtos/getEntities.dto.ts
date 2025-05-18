@@ -5,4 +5,6 @@ export class GetEntitiesDto {
   readonly items: Entity[];
 
   readonly breadcrumbs: IEntityBreadcrumb[];
+
+  readonly count: number;
 }
