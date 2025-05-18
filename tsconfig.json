@@ -19,6 +19,8 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
+    "include": ["src"],
+    "exclude": ["storages"],
     "paths": {
       "@/*": [
         "src/*"
