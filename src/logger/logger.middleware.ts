@@ -18,19 +18,20 @@ export class LoggerMiddleware implements NestMiddleware {
     const excludedRoutes = ["/auth", "/logger", "/users/password"];
     const excludedMethods = ["GET"];
 
+    const token =
+      (headers["authorization"] as string)?.split(" ")[1] ??
+      (headers["Authorization"] as string)?.split(" ")[1] ??
+      cookies.access;
+
     if (
       excludedRoutes.some((path) => request.originalUrl.startsWith(path)) ||
-      excludedMethods.some((method) => method === request.method)
+      excludedMethods.some((method) => method === request.method) ||
+      !token
     ) {
       return next();
     }
 
     const { method, baseUrl, ip, headers, query, body, cookies } = request;
-
-    const token =
-      (headers["authorization"] as string)?.split(" ")[1] ??
-      (headers["Authorization"] as string)?.split(" ")[1] ??
-      cookies.access;
 
     try {
       const { accessSecret } = this.configService.get<IConfig>("app");
