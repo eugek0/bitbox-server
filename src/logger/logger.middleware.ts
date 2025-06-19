@@ -19,9 +19,9 @@ export class LoggerMiddleware implements NestMiddleware {
     const excludedMethods = ["GET"];
 
     const token =
-      (headers["authorization"] as string)?.split(" ")[1] ??
-      (headers["Authorization"] as string)?.split(" ")[1] ??
-      cookies.access;
+      (request.headers["authorization"] as string)?.split(" ")[1] ??
+      (request.headers["Authorization"] as string)?.split(" ")[1] ??
+      request.cookies.access;
 
     if (
       excludedRoutes.some((path) => request.originalUrl.startsWith(path)) ||
